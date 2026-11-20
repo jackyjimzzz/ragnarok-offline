@@ -110,7 +110,7 @@ struct InventoryView: View {
             }
             .padding(.vertical, 8)
         }
-        .frame(height: 32 * 6 + 4 * 5 + 8 * 2)
+        .frame(height: 228) // [RagOff iPad Mod] = 32 * 6 + 4 * 5 + 8 * 2, pre-computed so Xcode 26.3 can type-check
     }
 
     @ViewBuilder private var contextMenu: some View {
