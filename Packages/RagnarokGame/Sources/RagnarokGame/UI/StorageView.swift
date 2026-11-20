@@ -282,7 +282,7 @@ private struct StorageItemList: View {
             .padding(8)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 32 * 8 + 4 * 7 + 8 * 2)
+        .frame(height: 300) // [RagOff iPad Mod] = 32 * 8 + 4 * 7 + 8 * 2, pre-computed so Xcode 26.3 can type-check
     }
 
     private var rowCount: Int {
@@ -322,7 +322,7 @@ private struct StorageItemGrid: View {
             .padding(8)
         }
         .frame(maxWidth: .infinity)
-        .frame(height: 32 * 8 + 4 * 7 + 8 * 2)
+        .frame(height: 300) // [RagOff iPad Mod] = 32 * 8 + 4 * 7 + 8 * 2, pre-computed so Xcode 26.3 can type-check
     }
 
     private var slotCount: Int {
