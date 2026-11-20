@@ -8,7 +8,9 @@ jobs:
   build:
     # Needs Xcode 26 (the project uses an Icon Composer .icon file).
     # The "Select newest Xcode" step below picks the newest Xcode on the runner.
-    runs-on: macos-latest
+    # Intel macOS runner: the Apple Silicon (arm64) pool is often full.
+    # If this one is also slow, change it back to macos-latest.
+    runs-on: macos-15-intel
     timeout-minutes: 120
 
     steps:
