@@ -24,6 +24,15 @@ let serverConfiguration = ServerConfiguration(
     battle_conf: """
         area_size: 26
         max_walk_path: 32
+        // [RagOff iPad Mod] Rates, written with reference to rAthena conf/battle/exp.conf and drops.conf.
+        // 100 = x1, 1000 = x10. Change the numbers to adjust.
+        base_exp_rate: 1000
+        job_exp_rate: 1000
+        item_rate_common: 500
+        item_rate_heal: 500
+        item_rate_use: 500
+        item_rate_equip: 500
+        item_rate_card: 500
         """,
     char_conf: """
         login_ip: 127.0.0.1
@@ -60,6 +69,11 @@ let serverConfiguration = ServerConfiguration(
               effect: true
             Permissions:
               any_warp: true
+              # [RagOff iPad Mod] Unlock every @command (e.g. @refine, @item2, @allskill, @allstats, @go)
+              # and allow trading / parties, following rAthena conf/groups.yml (Admin group).
+              all_commands: true
+              can_trade: true
+              can_party: true
         """,
     login_conf: """
         stdout_with_ansisequence: yes
