@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout (with swift-rathena submodule)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
           lfs: true
@@ -27,6 +27,8 @@ jobs:
           if [ -n "$NEWEST" ]; then sudo xcode-select -s "$NEWEST"; fi
           xcodebuild -version
 
+      # SWIFT_VERSION=5 / SWIFT_STRICT_CONCURRENCY=minimal: Xcode 26.3 rejects some
+      # Swift 6 concurrency checks the author's newer Xcode accepts; this turns them into warnings.
       - name: Build archive (no code signing)
         run: |
           set -o pipefail
@@ -42,7 +44,9 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            DEVELOPMENT_TEAM=""
+            DEVELOPMENT_TEAM="" \
+            SWIFT_VERSION=5 \
+            SWIFT_STRICT_CONCURRENCY=minimal
 
       - name: Package IPA
         run: |
