@@ -9,7 +9,8 @@ import CoreGraphics
 import RagnarokFileFormats
 
 struct SpriteRenderNode {
-    static let null = SpriteRenderNode()
+    // [RagOff iPad Mod] nonisolated(unsafe): Xcode 26.3 rejects this immutable static under Swift 6 checks.
+    nonisolated(unsafe) static let null = SpriteRenderNode()
 
     var image: CGImage?
     var scale: CGFloat = 1
