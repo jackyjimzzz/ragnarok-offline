@@ -6,9 +6,9 @@ on:
 
 jobs:
   build:
-    # Needs a macOS runner with Xcode 26 (the project uses an Icon Composer .icon file).
-    # If this label is unavailable, change it to macos-latest or macos-15.
-    runs-on: macos-26
+    # Needs Xcode 26 (the project uses an Icon Composer .icon file).
+    # The "Select newest Xcode" step below picks the newest Xcode on the runner.
+    runs-on: macos-latest
     timeout-minutes: 120
 
     steps:
@@ -18,8 +18,12 @@ jobs:
           submodules: recursive
           lfs: true
 
-      - name: Show Xcode version
-        run: xcodebuild -version
+      - name: Select newest Xcode
+        run: |
+          ls -d /Applications/Xcode*.app || true
+          NEWEST=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$NEWEST" ]; then sudo xcode-select -s "$NEWEST"; fi
+          xcodebuild -version
 
       - name: Build archive (no code signing)
         run: |
