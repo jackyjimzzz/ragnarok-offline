@@ -27,9 +27,7 @@ jobs:
           if [ -n "$NEWEST" ]; then sudo xcode-select -s "$NEWEST"; fi
           xcodebuild -version
 
-      # SWIFT_VERSION=5 / SWIFT_STRICT_CONCURRENCY=minimal: Xcode 26.3 rejects some
-      # Swift 6 concurrency checks the author's newer Xcode accepts; this turns them into warnings.
-      # BareSlashRegexLiterals keeps the Swift 6 /regex/ literal syntax working in Swift 5 mode.
+      # -continueBuildingAfterErrors: report every compile error in one run.
       - name: Build archive (no code signing)
         run: |
           set -o pipefail
@@ -42,13 +40,11 @@ jobs:
             -archivePath build/RagOff.xcarchive \
             -skipPackagePluginValidation \
             -skipMacroValidation \
+            -continueBuildingAfterErrors \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            DEVELOPMENT_TEAM="" \
-            SWIFT_VERSION=5 \
-            SWIFT_STRICT_CONCURRENCY=minimal \
-            'OTHER_SWIFT_FLAGS=$(inherited) -enable-upcoming-feature BareSlashRegexLiterals'
+            DEVELOPMENT_TEAM=""
 
       - name: Package IPA
         run: |
