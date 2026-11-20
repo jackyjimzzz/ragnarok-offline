@@ -27,7 +27,6 @@ jobs:
           if [ -n "$NEWEST" ]; then sudo xcode-select -s "$NEWEST"; fi
           xcodebuild -version
 
-      # -continueBuildingAfterErrors: report every compile error in one run.
       - name: Build archive (no code signing)
         run: |
           set -o pipefail
@@ -40,7 +39,6 @@ jobs:
             -archivePath build/RagOff.xcarchive \
             -skipPackagePluginValidation \
             -skipMacroValidation \
-            -continueBuildingAfterErrors \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
