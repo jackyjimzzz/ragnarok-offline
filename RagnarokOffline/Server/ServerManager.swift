@@ -33,6 +33,8 @@ let serverConfiguration = ServerConfiguration(
         item_rate_use: 500
         item_rate_equip: 500
         item_rate_card: 500
+        // [RagOff iPad Mod] Arrows and bullets are not used up.
+        arrow_decrement: 0
         """,
     char_conf: """
         login_ip: 127.0.0.1
@@ -74,6 +76,8 @@ let serverConfiguration = ServerConfiguration(
               all_commands: true
               can_trade: true
               can_party: true
+              # [RagOff iPad Mod] Skills need no items, SP or special weapons.
+              skill_unconditional: true
         """,
     login_conf: """
         stdout_with_ansisequence: yes
@@ -377,29 +381,36 @@ let adventurerScript = """
     			setarray .@w, 500060,550106,550107;
 
     		mes "[冒險服務員]";
-    		mes "這是 200 等的 Herosria 套裝：";
-    		mes "頭飾、盔甲、盾牌、鞋子、披肩、飾品各種款式都有，";
+    		mes "這是 200 等的 Herosria 套裝，想要哪一種類型？";
+    		mes "每套 7 件：頭飾、盔甲、盾牌、鞋子、披肩、兩個飾品，";
     		if (getarraysize(.@w))
-    			mes "再加上你這個職業能用的 Herosria 武器。";
-    		else
-    			mes "你目前的職業沒有專屬武器，轉職後可以再來領。";
-    		mes "總共大約 40 件，背包要留空位喔。";
+    			mes "再加上你這個職業能用的武器。";
     		next;
-    		if (select("領取:取消") == 2)
+    		switch (select("近戰物理:暴擊:遠程物理:魔法:輔助/坦克:取消")) {
+    		case 1:
+    			setarray .@a, 400336,450229,460036,470153,480215,490251,490255;
+    			break;
+    		case 2:
+    			setarray .@a, 401240,450231,460036,470155,480217,490252,490254;
+    			break;
+    		case 3:
+    			setarray .@a, 400337,450230,460036,470157,480216,490251,490255;
+    			break;
+    		case 4:
+    			setarray .@a, 400338,450232,460036,470154,480218,490252,490255;
+    			break;
+    		case 5:
+    			setarray .@a, 401242,450233,460035,470157,480219,490253,490256;
+    			break;
+    		default:
     			close;
+    		}
     		for (.@i = 0; .@i < getarraysize(.@w); .@i++)
     			getitem .@w[.@i], 1;
-    		setarray .@a,
-    			400336,400337,400338,400339,400340,401239,401240,401241,401242,401243,  // headgear
-    			450229,450230,450231,450232,450233,                                      // armor
-    			460034,460035,460036,460037,                                             // shield
-    			470153,470154,470155,470156,470157,                                      // shoes
-    			480215,480216,480217,480218,480219,                                      // garment
-    			490251,490252,490253,490254,490255,490256;                               // accessory
     		for (.@i = 0; .@i < getarraysize(.@a); .@i++)
     			getitem .@a[.@i], 1;
     		mes "[冒險服務員]";
-    		mes "裝備都給你了，挑適合自己的穿上吧！";
+    		mes "裝備都給你了，穿上試試看吧！";
     		close;
 
     	}
@@ -410,6 +421,14 @@ let adventurerScript = """
     	ragoff_lastx = .@wx;
     	ragoff_lasty = .@wy;
     	warp .@wm$, .@wx, .@wy;
+    	end;
+    }
+
+    -	script	RagOffPlayerBonus	-1,{
+    	end;
+    OnPCLoginEvent:
+    	// [RagOff iPad Mod] +100000 max weight, refreshed at every login.
+    	bonus_script "{ bonus bAddMaxWeight,1000000; }",2592000,1536;
     	end;
     }
 
@@ -512,6 +531,27 @@ let adventurerScript = """
     }
     """
 
+// [RagOff iPad Mod] Fly Wing and Butterfly Wing warp at once, without the Teleport skill cast.
+let itemDatabaseOverride = """
+    Header:
+      Type: ITEM_DB
+      Version: 3
+
+    Body:
+      - Id: 601
+        AegisName: Wing_Of_Fly
+        Name: Fly Wing
+        Type: Usable
+        Script: |
+          warp "Random",0,0;
+      - Id: 602
+        AegisName: Wing_Of_Butterfly
+        Name: Butterfly Wing
+        Type: Usable
+        Script: |
+          warp "SavePoint",0,0;
+    """
+
 /// Writes the mod's extra server files after the working directory is prepared.
 func installModFiles(at workingDirectoryURL: URL) throws {
     let fileManager = FileManager.default
@@ -524,6 +564,10 @@ func installModFiles(at workingDirectoryURL: URL) throws {
     let customNPCURL = workingDirectoryURL.appending(path: "npc/custom", directoryHint: .isDirectory)
     try fileManager.createDirectory(at: customNPCURL, withIntermediateDirectories: true)
     try adventurerScript.write(to: customNPCURL.appending(path: "ragoff_adventurer.txt"), atomically: true, encoding: .utf8)
+
+    let databaseImportURL = workingDirectoryURL.appending(path: "db/import", directoryHint: .isDirectory)
+    try fileManager.createDirectory(at: databaseImportURL, withIntermediateDirectories: true)
+    try itemDatabaseOverride.write(to: databaseImportURL.appending(path: "item_db.yml"), atomically: true, encoding: .utf8)
 }
 
 @MainActor
