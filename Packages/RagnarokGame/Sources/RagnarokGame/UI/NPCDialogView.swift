@@ -6,6 +6,7 @@
 //
 
 import RagnarokCore
+import RagnarokLocalization
 import RagnarokModels
 import SwiftUI
 
@@ -20,10 +21,10 @@ struct NPCDialogView: View {
     var body: some View {
         GameWindow {
             VStack(spacing: 5) {
-                NPCDialogMessageBox(message: dialog.message)
+                NPCDialogMessageBox(message: ScriptTextTable.shared.localizedText(for: dialog.message))
 
                 if let menu = dialog.menu {
-                    NPCDialogMenuBox(menu: menu, selectedIndex: $selectedMenuIndex)
+                    NPCDialogMenuBox(menu: menu.map { ScriptTextTable.shared.localizedText(for: $0) }, selectedIndex: $selectedMenuIndex)
                 }
 
                 if let input = dialog.input {
