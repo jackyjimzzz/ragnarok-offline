@@ -82,11 +82,297 @@ let serverConfiguration = ServerConfiguration(
     map_conf: """
         char_ip: 127.0.0.1
         stdout_with_ansisequence: yes
+        // [RagOff iPad Mod] 冒險服務員 NPC (written by installModFiles).
+        npc: npc/custom/ragoff_adventurer.txt
         """,
     web_conf: """
         stdout_with_ansisequence: yes
         """
 )
+
+// [RagOff iPad Mod] Server messages in Chinese, using rAthena's own conf/msg_conf/map_msg_chn.conf.
+// map_msg.conf imports conf/msg_conf/import/map_msg_eng_conf.txt, which is written below.
+let serverMessageOverride = """
+    import: conf/msg_conf/map_msg_chn.conf
+
+    // These lines use different format specifiers in map_msg_chn.conf, so keep the English text.
+    85: Invalid time for %s command (time=%d).
+    88: Sending request to %s server...
+    114: %d item(s) removed from the player.
+    115: %d item(s) removed. Player had only %d on %d items.
+    116: Character does not have the specified item.
+    374: Blue -- Player %s invites you to PVP duel (Use @accept/@reject) --
+    423: Your %s has been banished until %s
+    504: Used %d kafra points and %d cash points. %d kafra and %d cash points remaining.
+    1021: Please enter a player name (usage: %s <char name>).
+    1022: Please enter ban time and a player name (usage: %s <time> <char name>).
+    1024: MVP Drop Rates: Common %.2fx / Healing %.2fx / Usable %.2fx / Equipment %.2fx / Card %.2fx
+    1040: Map: %s | Players: %d | NPCs: %d | Chats: %d | Vendings: %d
+    1285: Item: '%s' (ID: %u)
+    1295: rAthena Version %s %s
+    1494: %d items are dropped (%d skipped)!
+    """
+
+// [RagOff iPad Mod] 冒險服務員 (Adventure Attendant) NPC script, loaded through map_conf "npc:".
+let adventurerScript = """
+    //===== RagOff iPad Mod ======================================
+    //= 冒險服務員 (Adventure Attendant)
+    //= Original script for the RagOff iPad mod.
+    //= Warp coordinates follow rAthena npc/custom/warper.txt (@go aligned).
+    //============================================================
+
+    -	script	RagOffAdventurer	-1,{
+    	function Warp; function Floors;
+
+    	mes "[冒險服務員]";
+    	mes "冒險者你好！需要什麼服務呢？";
+    	next;
+    	switch (select("傳送服務:治療與祝福:重置素質/技能:倉庫與存檔點:鑑定/修理裝備:轉職服務:領取冒險補給:道具商店:不用了")) {
+    	case 1:
+    		switch (select("城鎮:迷宮:上次傳送的地點")) {
+    		case 1:
+    			setarray .@name$, "普隆德拉","依斯魯德","吉芬","夢羅克","斐揚","艾爾貝塔","艾爾帕蘭","朱諾","克魔島","汶巴拉","尼芙菲姆","天津","崑崙","洛陽","阿約塔雅","艾音布羅克","里希塔樂鎮","雨果","拉赫","維恩斯","聖誕村","莫斯科維亞";
+    			setarray .@map$, "prontera","izlude","geffen","morocc","payon","alberta","aldebaran","yuno","comodo","umbala","niflheim","amatsu","gonryun","louyang","ayothaya","einbroch","lighthalzen","hugel","rachel","veins","xmas","moscovia";
+    			setarray .@x, 155,128,119,156,179,28,140,157,209,97,202,198,160,217,208,64,158,96,130,216,147,223;
+    			setarray .@y, 183,(checkre(3) ? 146 : 114),59,93,100,234,131,51,143,153,174,84,120,100,166,200,92,145,110,123,134,184;
+    			.@i = select(implode(.@name$, ":")) - 1;
+    			Warp(.@map$[.@i], .@x[.@i], .@y[.@i]);
+    			end;
+    		case 2:
+    			setarray .@name$, "普隆德拉地下水道","斐揚洞窟","吉芬地下城","海底洞穴","獸人地下城","金字塔","斯芬克斯","沉船","螞蟻地獄","礦坑","被詛咒的修道院","時計塔","玩具工廠","龜島","克雷斯特漢姆","冰洞","熔岩洞窟","天津地下城","洛陽地下城","基爾地下城","死者之塔","托爾火山","生體工學研究所","深淵湖水","奧丁神殿","拉赫聖殿";
+    			setarray .@floor$,
+    				"prt_sewb1,131,247|prt_sewb2,19,19|prt_sewb3,180,169|prt_sewb4,100,92",
+    				"pay_dun00,21,183|pay_dun01,19,33|pay_dun02,19,63|pay_dun03,155,159|pay_dun04,201,204",
+    				"gef_dun00,104,99|gef_dun01,115,236|gef_dun02,106,132|gef_dun03,203,200",
+    				"iz_dun00,168,168|iz_dun01,253,252|iz_dun02,236,204|iz_dun03,32,63|iz_dun04,26,27",
+    				"orcsdun01,32,170|orcsdun02,21,185",
+    				"moc_pryd01,192,9|moc_pryd02,10,192|moc_pryd03,100,92|moc_pryd04,181,11|moc_pryd05,94,96|moc_pryd06,192,8",
+    				"in_sphinx1,288,9|in_sphinx2,149,81|in_sphinx3,210,54|in_sphinx4,10,222|in_sphinx5,100,99",
+    				"treasure01,69,24|treasure02,102,27",
+    				"anthell01,35,262|anthell02,168,170",
+    				"mjo_dun01,52,17|mjo_dun02,381,343|mjo_dun03,302,262",
+    				"abbey01,51,14|abbey02,150,11|abbey03,120,10",
+    				"c_tower1,199,159|c_tower2,148,283|c_tower3,65,147|c_tower4,56,155|alde_dun01,297,25|alde_dun02,127,169|alde_dun03,277,178|alde_dun04,268,74",
+    				"xmas_dun01,205,15|xmas_dun02,129,133",
+    				"tur_dun01,154,49|tur_dun02,148,261|tur_dun03,132,189|tur_dun04,100,192",
+    				"glast_01,370,304|gl_cas01,199,29|gl_cas02,104,25|gl_knt01,150,15|gl_knt02,157,287|gl_chyard,147,15|gl_sew01,258,255|gl_sew02,108,291|gl_sew03,171,283|gl_sew04,68,277|gl_church,156,7|gl_step,12,7|gl_dun01,133,271|gl_dun02,224,274|gl_prison,14,70|gl_prison1,150,14",
+    				"ice_dun01,157,14|ice_dun02,151,155|ice_dun03,149,22|ice_dun04,33,158",
+    				"mag_dun01,126,68|mag_dun02,47,30",
+    				"ama_dun01,228,11|ama_dun02,34,41|ama_dun03,119,14",
+    				"lou_dun01,218,196|lou_dun02,282,20|lou_dun03,165,38",
+    				"kh_dun01,28,226|kh_dun02,41,198",
+    				"tha_t01,150,39|tha_t02,150,136|tha_t03,220,158|tha_t04,59,143|tha_t05,62,11|tha_t06,89,221|tha_t07,35,166|tha_t08,93,148|tha_t09,29,107|tha_t10,159,138|tha_t11,19,20|tha_t12,130,52",
+    				"thor_v01,21,228|thor_v02,75,205|thor_v03,34,272",
+    				"lhz_dun01,150,288|lhz_dun02,150,18|lhz_dun03,140,134",
+    				"abyss_01,261,272|abyss_02,275,270|abyss_03,116,27",
+    				"odin_tem01,298,167|odin_tem02,224,149|odin_tem03,266,280",
+    				"ra_san01,140,11|ra_san02,32,21|ra_san03,8,149|ra_san04,204,218|ra_san05,150,9";
+    			.@i = select(implode(.@name$, ":")) - 1;
+    			Floors(.@floor$[.@i]);
+    			end;
+    		case 3:
+    			if (ragoff_lastmap$ == "") {
+    				mes "[冒險服務員]";
+    				mes "你還沒有用我傳送過喔。";
+    				close;
+    			}
+    			Warp(ragoff_lastmap$, ragoff_lastx, ragoff_lasty);
+    			end;
+    		}
+    		end;
+
+    	case 2:
+    		percentheal 100,100;
+    		skilleffect "AL_INCAGI",10;
+    		sc_start SC_INCREASEAGI,240000,10;
+    		skilleffect "AL_BLESSING",10;
+    		sc_start SC_BLESSING,240000,10;
+    		mes "[冒險服務員]";
+    		mes "HP、SP 已經回滿，";
+    		mes "也幫你加上了速度增加和天使之賜福（4 分鐘）。";
+    		close;
+
+    	case 3:
+    		mes "[冒險服務員]";
+    		mes "要重置哪一個呢？";
+    		next;
+    		switch (select("重置素質點:重置技能點:兩個都重置:取消")) {
+    		case 1:
+    			resetstatus;
+    			break;
+    		case 2:
+    			resetskill;
+    			break;
+    		case 3:
+    			resetstatus;
+    			resetskill;
+    			break;
+    		default:
+    			close;
+    		}
+    		mes "[冒險服務員]";
+    		mes "重置完成了，點數已經還給你。";
+    		close;
+
+    	case 4:
+    		switch (select("開啟倉庫:在這裡記錄存檔點:取消")) {
+    		case 1:
+    			close2;
+    			openstorage;
+    			end;
+    		case 2:
+    			getmapxy(.@m$, .@x, .@y);
+    			savepoint .@m$, .@x, .@y;
+    			mes "[冒險服務員]";
+    			mes "已經把存檔點記錄在這裡了。";
+    			close;
+    		}
+    		close;
+
+    	case 5:
+    		switch (select("鑑定所有物品:修理所有裝備:取消")) {
+    		case 1:
+    			identifyall;
+    			mes "[冒險服務員]";
+    			mes "背包裡的物品都鑑定好了。";
+    			close;
+    		case 2:
+    			repairall;
+    			mes "[冒險服務員]";
+    			mes "損壞的裝備都修好了。";
+    			close;
+    		}
+    		close;
+
+    	case 6:
+    		mes "[冒險服務員]";
+    		mes "想轉成哪一系的職業呢？";
+    		mes "轉職後職業等級會變回 1，";
+    		mes "多出來的技能點可以在這裡重置。";
+    		next;
+    		switch (select("一轉:二轉:進階二轉:進階三轉:四轉:擴充職業:取消")) {
+    		case 1:
+    			setarray .@jname$, "劍士","魔法師","弓箭手","服事","商人","盜賊","跆拳少年","槍手","忍者","超級初學者";
+    			setarray .@jid, 1,2,3,4,5,6,4046,24,25,23;
+    			break;
+    		case 2:
+    			setarray .@jname$, "騎士","祭司","巫師","鐵匠","獵人","刺客","十字軍","武僧","賢者","流氓","鍊金術師","詩人","舞孃","拳聖","悟靈士";
+    			setarray .@jid, 7,8,9,10,11,12,14,15,16,17,18,19,20,4047,4049;
+    			break;
+    		case 3:
+    			setarray .@jname$, "騎士領主","神官","超魔導士","神工匠","神射手","十字刺客","聖殿十字軍","武術宗師","智者","神行太保","創造者","搞笑藝人","冷豔舞姬";
+    			setarray .@jid, 4008,4009,4010,4011,4012,4013,4015,4016,4017,4018,4019,4020,4021;
+    			break;
+    		case 4:
+    			setarray .@jname$, "盧恩騎士 (Rune Knight)","大法師 (Warlock)","遊俠 (Ranger)","大主教 (Arch Bishop)","機匠 (Mechanic)","十字斬首者 (Guillotine Cross)","皇家禁衛隊 (Royal Guard)","魔導師 (Sorcerer)","宮廷樂師 (Minstrel)","浪跡舞者 (Wanderer)","修羅 (Sura)","基因學者 (Genetic)","魅影追蹤者 (Shadow Chaser)";
+    			setarray .@jid, 4060,4061,4062,4063,4064,4065,4073,4074,4075,4076,4077,4078,4079;
+    			break;
+    		case 5:
+    			setarray .@jname$, "Dragon Knight","Meister","Shadow Cross","Arch Mage","Cardinal","Windhawk","Imperial Guard","Biolo","Abyss Chaser","Elemental Master","聖裁者 (Inquisitor)","Troubadour","Trouvere";
+    			setarray .@jid, 4252,4253,4254,4255,4256,4257,4258,4259,4260,4261,4262,4263,4264;
+    			break;
+    		case 6:
+    			setarray .@jname$, "擴充超級初學者 (Expanded Super Novice)","星帝 (Star Emperor)","Soul Reaper","叛亂者 (Rebellion)","影狼 (Kagerou)","朧 (Oboro)","喵族召喚師 (Summoner)","Sky Emperor","Soul Ascetic","Shinkiro","Shiranui","Night Watch","Hyper Novice","Spirit Handler";
+    			setarray .@jid, 4190,4239,4240,4215,4211,4212,4218,4302,4303,4304,4305,4306,4307,4308;
+    			break;
+    		default:
+    			close;
+    		}
+    		.@j = select(implode(.@jname$, ":")) - 1;
+    		if (.@jid[.@j] >= 4054 && !checkre(0)) {
+    			mes "[冒險服務員]";
+    			mes "這個職業只有在 Renewal 模式才能轉喔。";
+    			close;
+    		}
+    		jobchange .@jid[.@j];
+    		mes "[冒險服務員]";
+    		mes "轉職完成！加油吧！";
+    		close;
+
+    	case 7:
+    		getitem 504,50;   // White Potion
+    		getitem 505,30;   // Blue Potion
+    		getitem 601,100;  // Fly Wing
+    		getitem 602,20;   // Butterfly Wing
+    		getitem 611,10;   // Magnifier
+    		getitem 2301,1;   // Cotton Shirt
+    		getitem 2401,1;   // Sandals
+    		getitem 2501,1;   // Hood
+    		getitem 2101,1;   // Guard
+    		mes "[冒險服務員]";
+    		mes "這是冒險補給，請收下！";
+    		mes "藥水、蒼蠅翅膀、蝴蝶翅膀、放大鏡，";
+    		mes "還有一套基本防具。";
+    		close;
+
+    	case 8:
+    		close2;
+    		callshop "RagOffShop",1;
+    		end;
+    	}
+    	close;
+
+    	function Warp {
+    		ragoff_lastmap$ = getarg(0);
+    		ragoff_lastx = getarg(1);
+    		ragoff_lasty = getarg(2);
+    		warp getarg(0), getarg(1), getarg(2);
+    		end;
+    	}
+
+    	function Floors {
+    		explode(.@f$, getarg(0), "|");
+    		.@n = getarraysize(.@f$);
+    		for (.@i = 0; .@i < .@n; .@i++) {
+    			explode(.@p$, .@f$[.@i], ",");
+    			.@menu$[.@i] = "第 " + (.@i + 1) + " 區 (" + .@p$[0] + ")";
+    		}
+    		.@s = select(implode(.@menu$, ":")) - 1;
+    		explode(.@p$, .@f$[.@s], ",");
+    		Warp(.@p$[0], atoi(.@p$[1]), atoi(.@p$[2]));
+    		end;
+    	}
+    }
+
+    -	shop	RagOffShop	-1,501:-1,502:-1,503:-1,504:-1,505:-1,506:-1,601:-1,602:-1,611:-1,645:-1,656:-1,657:-1,715:-1,716:-1,717:-1,1065:-1,1750:-1,1770:-1,7135:-1,7136:-1,7137:-1,7138:-1,7139:-1,12016:-1
+
+    prontera,159,192,4	duplicate(RagOffAdventurer)	冒險服務員#prt	811
+    izlude,134,150,4	duplicate(RagOffAdventurer)	冒險服務員#izl	811
+    geffen,124,72,4	duplicate(RagOffAdventurer)	冒險服務員#gef	811
+    morocc,159,97,4	duplicate(RagOffAdventurer)	冒險服務員#moc	811
+    payon,182,108,4	duplicate(RagOffAdventurer)	冒險服務員#pay	811
+    alberta,28,240,4	duplicate(RagOffAdventurer)	冒險服務員#alb	811
+    aldebaran,145,118,4	duplicate(RagOffAdventurer)	冒險服務員#alde	811
+    yuno,162,47,4	duplicate(RagOffAdventurer)	冒險服務員#yuno	811
+    comodo,194,158,4	duplicate(RagOffAdventurer)	冒險服務員#com	811
+    umbala,106,150,3	duplicate(RagOffAdventurer)	冒險服務員#umb	811
+    niflheim,205,179,4	duplicate(RagOffAdventurer)	冒險服務員#nif	811
+    amatsu,203,87,4	duplicate(RagOffAdventurer)	冒險服務員#ama	811
+    gonryun,162,122,4	duplicate(RagOffAdventurer)	冒險服務員#gon	811
+    louyang,208,103,6	duplicate(RagOffAdventurer)	冒險服務員#lou	811
+    ayothaya,209,169,6	duplicate(RagOffAdventurer)	冒險服務員#ayo	811
+    einbroch,69,202,4	duplicate(RagOffAdventurer)	冒險服務員#einbr	811
+    lighthalzen,162,102,4	duplicate(RagOffAdventurer)	冒險服務員#lhz	811
+    hugel,101,151,4	duplicate(RagOffAdventurer)	冒險服務員#hug	811
+    rachel,135,116,4	duplicate(RagOffAdventurer)	冒險服務員#rac	811
+    veins,214,123,4	duplicate(RagOffAdventurer)	冒險服務員#ve	811
+    xmas,150,136,6	duplicate(RagOffAdventurer)	冒險服務員#xmas	811
+    moscovia,229,191,4	duplicate(RagOffAdventurer)	冒險服務員#mos	811
+    """
+
+/// Writes the mod's extra server files after the working directory is prepared.
+func installModFiles(at workingDirectoryURL: URL) throws {
+    let fileManager = FileManager.default
+
+    let messageImportURL = workingDirectoryURL.appending(path: "conf/msg_conf/import", directoryHint: .isDirectory)
+    try fileManager.createDirectory(at: messageImportURL, withIntermediateDirectories: true)
+    try serverMessageOverride.write(to: messageImportURL.appending(path: "map_msg_eng_conf.txt"), atomically: true, encoding: .utf8)
+    try "// [RagOff iPad Mod] Intentionally empty.\n".write(to: messageImportURL.appending(path: "map_msg_chn_conf.txt"), atomically: true, encoding: .utf8)
+
+    let customNPCURL = workingDirectoryURL.appending(path: "npc/custom", directoryHint: .isDirectory)
+    try fileManager.createDirectory(at: customNPCURL, withIntermediateDirectories: true)
+    try adventurerScript.write(to: customNPCURL.appending(path: "ragoff_adventurer.txt"), atomically: true, encoding: .utf8)
+}
 
 @MainActor
 @Observable
@@ -159,11 +445,13 @@ final class ServerManager {
 
     func startServer(_ server: ServerModel) async throws {
         try await serverResourceManager.prepareWorkingDirectory(at: serverWorkingDirectoryURL, mode: mode, configuration: serverConfiguration)
+        try installModFiles(at: serverWorkingDirectoryURL)
         _ = await server.start()
     }
 
     func startAllServers() async throws {
         try await serverResourceManager.prepareWorkingDirectory(at: serverWorkingDirectoryURL, mode: mode, configuration: serverConfiguration)
+        try installModFiles(at: serverWorkingDirectoryURL)
         await startServers(allServers)
     }
 
@@ -186,6 +474,7 @@ final class ServerManager {
         serversToResume.removeAll()
 
         try await serverResourceManager.prepareWorkingDirectory(at: serverWorkingDirectoryURL, mode: mode, configuration: serverConfiguration)
+        try installModFiles(at: serverWorkingDirectoryURL)
         await startServers(servers)
     }
 
