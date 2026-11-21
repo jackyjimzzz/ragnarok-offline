@@ -22,6 +22,7 @@ final class MapSceneRuntime {
     let world: WorldResource
     let renderResources: MapSceneRenderResources
     var lastCamera: RenderCamera?
+    private var nameTextDescriptors: [String : TextDescriptor] = [:]
 
     init(
         scene: MapScene,
@@ -216,44 +217,78 @@ final class MapSceneRuntime {
 
     /// The target selector's object shows its name 2 points under its HP bar.
     /// Without a bar, the name is centered where the bar would be.
+    /// [RagOff iPad Mod] NPC and monster names are always shown, since a touch screen has no mouse hover.
     private func makeTexts(worldPositions: [GameObjectID : SIMD3<Float>]) -> [MapSceneRenderSnapshot.Text] {
-        guard let targetSelector = scene.targetSelector,
-              let target = scene.objects[targetSelector.objectID],
-              let targetPosition = worldPositions[target.objectID],
-              target.effectState != .cloak else {
-            return []
+        let targetObjectID = scene.targetSelector?.objectID
+
+        let namedObjects = scene.objects.values.filter { object in
+            guard object.effectState != .cloak,
+                  worldPositions[object.objectID] != nil,
+                  !object.name.isEmpty else {
+                return false
+            }
+            if object.objectID == targetObjectID {
+                return true
+            }
+            guard object.effectState != .invisible, !object.isDead else {
+                return false
+            }
+            switch object.type {
+            case .monster:
+                return true
+            case .npc:
+                return ![45, 111, 139].contains(object.job)
+            default:
+                return false
+            }
         }
 
-        let targetNameText = TextDescriptor(name: target.name, objectType: target.type)
-        let textTextures = renderResources.textTextureCache.synchronize(texts: [targetNameText])
-        guard let textTexture = textTextures[targetNameText] else {
-            return []
-        }
+        let descriptors = namedObjects.map { nameTextDescriptor(for: $0) }
+        let textTextures = renderResources.textTextureCache.synchronize(texts: descriptors)
 
-        var barBottom: Float? = nil
-        if scene.hpspBarObjectIDs.contains(target.objectID) {
-            let barMesh = BarMesh.mesh(
-                hp: target.hp,
-                maxHp: target.maxHp,
-                sp: target.sp,
-                maxSp: target.maxSp,
-                objectType: target.type
-            )
-            barBottom = barMesh.vertices.map(\.position.y).min()
-        }
+        var texts: [MapSceneRenderSnapshot.Text] = []
+        for (object, nameText) in zip(namedObjects, descriptors) {
+            guard let textTexture = textTextures[nameText],
+                  let position = worldPositions[object.objectID] else {
+                continue
+            }
 
-        let textTop = if let barBottom {
-            barBottom - 2
-        } else {
-            targetNameText.size.y / 2
+            var barBottom: Float? = nil
+            if scene.hpspBarObjectIDs.contains(object.objectID) {
+                let barMesh = BarMesh.mesh(
+                    hp: object.hp,
+                    maxHp: object.maxHp,
+                    sp: object.sp,
+                    maxSp: object.maxSp,
+                    objectType: object.type
+                )
+                barBottom = barMesh.vertices.map(\.position.y).min()
+            }
+
+            let textTop = if let barBottom {
+                barBottom - 2
+            } else {
+                nameText.size.y / 2
+            }
+            let textMesh = TextMesh(size: nameText.size, top: textTop)
+            texts.append(MapSceneRenderSnapshot.Text(
+                vertices: textMesh.vertices,
+                worldPosition: position + [0, 0, -0.8],
+                texture: textTexture
+            ))
         }
-        let textMesh = TextMesh(size: targetNameText.size, top: textTop)
-        let text = MapSceneRenderSnapshot.Text(
-            vertices: textMesh.vertices,
-            worldPosition: targetPosition + [0, 0, -0.8],
-            texture: textTexture
-        )
-        return [text]
+        return texts
+    }
+
+    /// Measuring text is slow, so each name is measured once.
+    private func nameTextDescriptor(for object: MapSceneMapObject) -> TextDescriptor {
+        let key = "\(object.type.rawValue)|\(object.name)"
+        if let descriptor = nameTextDescriptors[key] {
+            return descriptor
+        }
+        let descriptor = TextDescriptor(name: object.name, objectType: object.type)
+        nameTextDescriptors[key] = descriptor
+        return descriptor
     }
 
     private func makeCombatTexts(
