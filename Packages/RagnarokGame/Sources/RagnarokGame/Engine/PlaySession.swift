@@ -9,6 +9,7 @@ import Foundation
 import Metal
 import Observation
 import RagnarokConstants
+import RagnarokLocalization
 import RagnarokModels
 import RagnarokNetwork
 import RagnarokPackets
@@ -90,6 +91,8 @@ final class PlaySession {
             itemInfoTable: context.itemInfoTable,
             messageStringTable: context.messageStringTable
         )
+
+        ScriptTextTable.preload()
     }
 
     /// Keeps the current cooldown when it would end later than the new one.
