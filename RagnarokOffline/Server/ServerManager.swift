@@ -121,9 +121,8 @@ let adventurerScript = """
     //= Warp coordinates follow rAthena npc/custom/warper.txt (@go aligned).
     //============================================================
 
-    -	script	RagOffAdventurer	-1,{
-    	function Warp; function Floors;
-
+    function	script	F_RagOffAdventurer	{
+    	debugmes "[RagOff] Adventurer clicked by " + strcharinfo(0);
     	mes "[冒險服務員]";
     	mes "冒險者你好！需要什麼服務呢？";
     	next;
@@ -136,8 +135,10 @@ let adventurerScript = """
     			setarray .@x, 155,128,119,156,179,28,140,157,209,97,202,198,160,217,208,64,158,96,130,216,147,223;
     			setarray .@y, 183,(checkre(3) ? 146 : 114),59,93,100,234,131,51,143,153,174,84,120,100,166,200,92,145,110,123,134,184;
     			.@i = select(implode(.@name$, ":")) - 1;
-    			Warp(.@map$[.@i], .@x[.@i], .@y[.@i]);
-    			end;
+    			.@wm$ = .@map$[.@i];
+    			.@wx = .@x[.@i];
+    			.@wy = .@y[.@i];
+    			goto L_DoWarp;
     		case 2:
     			setarray .@name$, "普隆德拉地下水道","斐揚洞窟","吉芬地下城","海底洞穴","獸人地下城","金字塔","斯芬克斯","沉船","螞蟻地獄","礦坑","被詛咒的修道院","時計塔","玩具工廠","龜島","克雷斯特漢姆","冰洞","熔岩洞窟","天津地下城","洛陽地下城","基爾地下城","死者之塔","托爾火山","生體工學研究所","深淵湖水","奧丁神殿","拉赫聖殿";
     			setarray .@floor$,
@@ -167,17 +168,29 @@ let adventurerScript = """
     				"abyss_01,261,272|abyss_02,275,270|abyss_03,116,27",
     				"odin_tem01,298,167|odin_tem02,224,149|odin_tem03,266,280",
     				"ra_san01,140,11|ra_san02,32,21|ra_san03,8,149|ra_san04,204,218|ra_san05,150,9";
-    			.@i = select(implode(.@name$, ":")) - 1;
-    			Floors(.@floor$[.@i]);
-    			end;
+    			.@d = select(implode(.@name$, ":")) - 1;
+    			explode(.@f$, .@floor$[.@d], "|");
+    			.@n = getarraysize(.@f$);
+    			for (.@k = 0; .@k < .@n; .@k++) {
+    				explode(.@p$, .@f$[.@k], ",");
+    				.@menu$[.@k] = "第 " + (.@k + 1) + " 區 (" + .@p$[0] + ")";
+    			}
+    			.@s = select(implode(.@menu$, ":")) - 1;
+    			explode(.@p$, .@f$[.@s], ",");
+    			.@wm$ = .@p$[0];
+    			.@wx = atoi(.@p$[1]);
+    			.@wy = atoi(.@p$[2]);
+    			goto L_DoWarp;
     		case 3:
     			if (ragoff_lastmap$ == "") {
     				mes "[冒險服務員]";
     				mes "你還沒有用我傳送過喔。";
     				close;
     			}
-    			Warp(ragoff_lastmap$, ragoff_lastx, ragoff_lasty);
-    			end;
+    			.@wm$ = ragoff_lastmap$;
+    			.@wx = ragoff_lastx;
+    			.@wy = ragoff_lasty;
+    			goto L_DoWarp;
     		}
     		end;
 
@@ -312,52 +325,111 @@ let adventurerScript = """
     	}
     	close;
 
-    	function Warp {
-    		ragoff_lastmap$ = getarg(0);
-    		ragoff_lastx = getarg(1);
-    		ragoff_lasty = getarg(2);
-    		warp getarg(0), getarg(1), getarg(2);
-    		end;
-    	}
+    L_DoWarp:
+    	ragoff_lastmap$ = .@wm$;
+    	ragoff_lastx = .@wx;
+    	ragoff_lasty = .@wy;
+    	warp .@wm$, .@wx, .@wy;
+    	end;
+    }
 
-    	function Floors {
-    		explode(.@f$, getarg(0), "|");
-    		.@n = getarraysize(.@f$);
-    		for (.@i = 0; .@i < .@n; .@i++) {
-    			explode(.@p$, .@f$[.@i], ",");
-    			.@menu$[.@i] = "第 " + (.@i + 1) + " 區 (" + .@p$[0] + ")";
-    		}
-    		.@s = select(implode(.@menu$, ":")) - 1;
-    		explode(.@p$, .@f$[.@s], ",");
-    		Warp(.@p$[0], atoi(.@p$[1]), atoi(.@p$[2]));
-    		end;
-    	}
+    -	script	RagOffAdventurerInit	-1,{
+    	end;
+    OnInit:
+    	debugmes "[RagOff] Adventurer script loaded";
+    	end;
     }
 
     -	shop	RagOffShop	-1,501:-1,502:-1,503:-1,504:-1,505:-1,506:-1,601:-1,602:-1,611:-1,645:-1,656:-1,657:-1,715:-1,716:-1,717:-1,1065:-1,1750:-1,1770:-1,7135:-1,7136:-1,7137:-1,7138:-1,7139:-1,12016:-1
 
-    prontera,159,192,4	duplicate(RagOffAdventurer)	冒險服務員#prt	811
-    izlude,134,150,4	duplicate(RagOffAdventurer)	冒險服務員#izl	811
-    geffen,124,72,4	duplicate(RagOffAdventurer)	冒險服務員#gef	811
-    morocc,159,97,4	duplicate(RagOffAdventurer)	冒險服務員#moc	811
-    payon,182,108,4	duplicate(RagOffAdventurer)	冒險服務員#pay	811
-    alberta,28,240,4	duplicate(RagOffAdventurer)	冒險服務員#alb	811
-    aldebaran,145,118,4	duplicate(RagOffAdventurer)	冒險服務員#alde	811
-    yuno,162,47,4	duplicate(RagOffAdventurer)	冒險服務員#yuno	811
-    comodo,194,158,4	duplicate(RagOffAdventurer)	冒險服務員#com	811
-    umbala,106,150,3	duplicate(RagOffAdventurer)	冒險服務員#umb	811
-    niflheim,205,179,4	duplicate(RagOffAdventurer)	冒險服務員#nif	811
-    amatsu,203,87,4	duplicate(RagOffAdventurer)	冒險服務員#ama	811
-    gonryun,162,122,4	duplicate(RagOffAdventurer)	冒險服務員#gon	811
-    louyang,208,103,6	duplicate(RagOffAdventurer)	冒險服務員#lou	811
-    ayothaya,209,169,6	duplicate(RagOffAdventurer)	冒險服務員#ayo	811
-    einbroch,69,202,4	duplicate(RagOffAdventurer)	冒險服務員#einbr	811
-    lighthalzen,162,102,4	duplicate(RagOffAdventurer)	冒險服務員#lhz	811
-    hugel,101,151,4	duplicate(RagOffAdventurer)	冒險服務員#hug	811
-    rachel,135,116,4	duplicate(RagOffAdventurer)	冒險服務員#rac	811
-    veins,214,123,4	duplicate(RagOffAdventurer)	冒險服務員#ve	811
-    xmas,150,136,6	duplicate(RagOffAdventurer)	冒險服務員#xmas	811
-    moscovia,229,191,4	duplicate(RagOffAdventurer)	冒險服務員#mos	811
+    prontera,159,192,4	script	冒險服務員#prt	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    izlude,134,150,4	script	冒險服務員#izl	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    geffen,124,72,4	script	冒險服務員#gef	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    morocc,159,97,4	script	冒險服務員#moc	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    payon,182,108,4	script	冒險服務員#pay	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    alberta,28,240,4	script	冒險服務員#alb	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    aldebaran,145,118,4	script	冒險服務員#alde	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    yuno,162,47,4	script	冒險服務員#yuno	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    comodo,194,158,4	script	冒險服務員#com	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    umbala,106,150,3	script	冒險服務員#umb	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    niflheim,205,179,4	script	冒險服務員#nif	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    amatsu,203,87,4	script	冒險服務員#ama	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    gonryun,162,122,4	script	冒險服務員#gon	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    louyang,208,103,6	script	冒險服務員#lou	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    ayothaya,209,169,6	script	冒險服務員#ayo	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    einbroch,69,202,4	script	冒險服務員#einbr	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    lighthalzen,162,102,4	script	冒險服務員#lhz	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    hugel,101,151,4	script	冒險服務員#hug	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    rachel,135,116,4	script	冒險服務員#rac	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    veins,214,123,4	script	冒險服務員#ve	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    xmas,150,136,6	script	冒險服務員#xmas	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
+    moscovia,229,191,4	script	冒險服務員#mos	124,{
+    	callfunc "F_RagOffAdventurer";
+    	end;
+    }
     """
 
 /// Writes the mod's extra server files after the working directory is prepared.
