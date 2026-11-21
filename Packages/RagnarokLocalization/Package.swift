@@ -21,7 +21,6 @@ let package = Package(
             name: "RagnarokLocalization",
             exclude: [
                 "Resources/zh-Hans.lproj/ScriptText.json",
-                "Resources/zh-Hant.lproj/ScriptText.json",
             ],
             resources: [
                 .process("Resources"),
