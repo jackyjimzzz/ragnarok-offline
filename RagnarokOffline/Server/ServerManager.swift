@@ -126,7 +126,7 @@ let adventurerScript = """
     	mes "[冒險服務員]";
     	mes "冒險者你好！需要什麼服務呢？";
     	next;
-    	switch (select("傳送服務:治療與祝福:重置素質/技能:倉庫與存檔點:鑑定/修理裝備:轉職服務:領取冒險補給:道具商店:不用了")) {
+    	switch (select("傳送服務:治療與祝福:重置素質/技能:倉庫與存檔點:鑑定/修理裝備:轉職服務:領取冒險補給:道具商店:一鍵升到 200 等:領取 200 等套裝:不用了")) {
     	case 1:
     		switch (select("城鎮:迷宮:上次傳送的地點")) {
     		case 1:
@@ -322,6 +322,86 @@ let adventurerScript = """
     		close2;
     		callshop "RagOffShop",1;
     		end;
+    	case 9:
+    		mes "[冒險服務員]";
+    		mes "要把基本等級直接升到 200 嗎？";
+    		mes "職業等級也會一起升到上限。";
+    		mes "（上限比 200 低的職業會停在上限。）";
+    		next;
+    		if (select("升級:取消") == 2)
+    			close;
+    		if (BaseLevel < 200)
+    			atcommand "@blvl " + (200 - BaseLevel);
+    		atcommand "@jlvl 100";
+    		mes "[冒險服務員]";
+    		mes "升級完成！記得去分配素質點和技能點喔。";
+    		close;
+
+    	case 10:
+    		.@bj = BaseJob;
+    		if (.@bj == 7)                                       // Knight family
+    			setarray .@w, 21064,600032,630020;
+    		else if (.@bj == 14)                                 // Crusader family
+    			setarray .@w, 500057,500058,530036;
+    		else if (.@bj == 9)                                  // Wizard family
+    			setarray .@w, 550096,640038,640039;
+    		else if (.@bj == 16)                                 // Sage family
+    			setarray .@w, 540061,540062,550097;
+    		else if (.@bj == 8)                                  // Priest family
+    			setarray .@w, 540063,550098,550099;
+    		else if (.@bj == 15)                                 // Monk family
+    			setarray .@w, 560039,560040,590052;
+    		else if (.@bj == 10)                                 // Blacksmith family
+    			setarray .@w, 520022,590050,620021;
+    		else if (.@bj == 18)                                 // Alchemist family
+    			setarray .@w, 500059,510079,590051;
+    		else if (.@bj == 12)                                 // Assassin family
+    			setarray .@w, 510080,510081,510082,510083,610043;
+    		else if (.@bj == 17)                                 // Rogue family
+    			setarray .@w, 510084,510085,700061;
+    		else if (.@bj == 11)                                 // Hunter family
+    			setarray .@w, 510086,700062,700063;
+    		else if (.@bj == 19 || .@bj == 20)                   // Bard / Dancer family
+    			setarray .@w, 570034,570035,580035,580036,700064;
+    		else if (.@bj == 25 || .@bj == 4211 || .@bj == 4212 || .@bj == 4304 || .@bj == 4305)   // Ninja family
+    			setarray .@w, 510087,510088,510089,510090,650030;
+    		else if (.@bj == 24 || .@bj == 4215 || .@bj == 4306) // Gunslinger family
+    			setarray .@w, 800017,810016,820012,830016,840011;
+    		else if (.@bj == 4047 || .@bj == 4239 || .@bj == 4302) // Star Gladiator family
+    			setarray .@w, 540064,540065,540066;
+    		else if (.@bj == 4049 || .@bj == 4240 || .@bj == 4303) // Soul Linker family
+    			setarray .@w, 550100,550101,550102;
+    		else if (.@bj == 4218 || .@bj == 4308)               // Summoner family
+    			setarray .@w, 550103,550104,550105;
+    		else if (.@bj == 0 || .@bj == 23 || .@bj == 4190 || .@bj == 4307) // Novice family
+    			setarray .@w, 500060,550106,550107;
+
+    		mes "[冒險服務員]";
+    		mes "這是 200 等的 Herosria 套裝：";
+    		mes "頭飾、盔甲、盾牌、鞋子、披肩、飾品各種款式都有，";
+    		if (getarraysize(.@w))
+    			mes "再加上你這個職業能用的 Herosria 武器。";
+    		else
+    			mes "你目前的職業沒有專屬武器，轉職後可以再來領。";
+    		mes "總共大約 40 件，背包要留空位喔。";
+    		next;
+    		if (select("領取:取消") == 2)
+    			close;
+    		for (.@i = 0; .@i < getarraysize(.@w); .@i++)
+    			getitem .@w[.@i], 1;
+    		setarray .@a,
+    			400336,400337,400338,400339,400340,401239,401240,401241,401242,401243,  // headgear
+    			450229,450230,450231,450232,450233,                                      // armor
+    			460034,460035,460036,460037,                                             // shield
+    			470153,470154,470155,470156,470157,                                      // shoes
+    			480215,480216,480217,480218,480219,                                      // garment
+    			490251,490252,490253,490254,490255,490256;                               // accessory
+    		for (.@i = 0; .@i < getarraysize(.@a); .@i++)
+    			getitem .@a[.@i], 1;
+    		mes "[冒險服務員]";
+    		mes "裝備都給你了，挑適合自己的穿上吧！";
+    		close;
+
     	}
     	close;
 
