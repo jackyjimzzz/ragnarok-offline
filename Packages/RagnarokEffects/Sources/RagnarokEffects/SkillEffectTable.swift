@@ -169,7 +169,7 @@ public enum SkillEffectTable {
     ]
 
     private static func entry(for skillID: SkillID) -> SkillEffectDefinition? {
-        table[skillID] ?? RagOffSkillEffectTable.table[skillID]
+        table[skillID] ?? RagOffSkillEffectTable.table[skillID] ?? RagOffSkillEffectTable2.table[skillID]
     }
 
     public static func beginCastEffects(for skillID: SkillID) -> [EffectReference] {
