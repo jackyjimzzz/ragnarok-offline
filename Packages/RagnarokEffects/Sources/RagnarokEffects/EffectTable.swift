@@ -1145,6 +1145,53 @@ public enum EffectTable {
                 rotatesContinuously: true
             ),
         ],
+        // [RagOff iPad Mod] Thief / Assassin line, ported from roBrowserLegacy EffectTable.js.
+        .ef_cloaking: [
+            .wav(soundName: "effect\\assasin_cloaking.wav"),
+        ],
+        .ef_venomdust: [
+            .str(
+                fileName: "venomdust.str",
+                soundName: "effect\\assasin_poisonreact.wav",
+                attachedToTarget: false
+            ),
+        ],
+        .ef_poisonreact: [
+            .str(
+                fileName: "poisonreact_1st.str",
+                soundName: "effect\\assasin_poisonreact.wav",
+                attachedToTarget: true
+            ),
+        ],
+        .ef_poisonreact2: [
+            .str(
+                fileName: "poisonreact.str",
+                soundName: "effect\\assasin_poisonreact.wav",
+                attachedToTarget: true
+            ),
+        ],
+        .ef_splasher: [
+            .str(
+                fileName: "venomsplasher.str",
+                soundName: "effect\\assasin_venomsplasher.wav",
+                attachedToTarget: true
+            ),
+        ],
+        .ef_sonicblow2: [
+            .str(
+                fileName: "sonicblow.str",
+                attachedToTarget: true
+            ),
+        ],
+        .ef_edp: [
+            .wav(soundName: "effect\\assasin_cloaking.wav"),
+        ],
+        .ef_gc_darkcrow: [
+            .str(
+                fileName: "gc_darkcrow.str",
+                attachedToTarget: true
+            ),
+        ],
     ]
 
     private static let namedTable: [String : [EffectDefinition]] = [
@@ -1234,6 +1281,159 @@ public enum EffectTable {
                 positionStartYRandomRange: 1...3,
                 size: [100, 50],
                 angle: 112.5
+            ),
+        ],
+        "ef_gc_crossimpact": [
+            .str(
+                fileName: "new_crossimpact\\new_crossimpact\\new_crossimpact.str",
+                attachedToTarget: false
+            ),
+        ],
+        "ef_gc_poisoningweapon": [
+            .str(
+                fileName: "poison.str",
+                attachedToTarget: false
+            ),
+        ],
+        "ef_gc_counterslash": [
+            .str(
+                fileName: "new_counter_slash\\new_counter_slash\\new_counter_slash.str",
+                attachedToTarget: false
+            ),
+            .str(
+                fileName: "new_counter_slash\\new_counter_slash_bottom\\new_counter_slash_bottom.str",
+                attachedToTarget: false
+            ),
+        ],
+        "ef_gc_poisonsmoke": [
+            .str(
+                fileName: "new_poisonsmoke\\new_poisonsmoke\\new_poisonsmoke_%d.str",
+                randomNumberRange: 1...2,
+                attachedToTarget: false
+            ),
+        ],
+        "ef_hallucinationwalk": [
+            .wav(soundName: "effect\\hallucinationwalk.wav"),
+        ],
+        "ef_gc_crossripperslasher": [
+            .str(
+                fileName: "new_crossripperslasher\\new_crossripperslasher\\new_crossripperslasher.str",
+                attachedToTarget: false
+            ),
+        ],
+        "ef_shc_shadow_exceed_cast": [
+            .str(
+                fileName: "shadow_cross\\shc_shadow_exceed\\shadow_exceed_cast\\shadow_exceed_cast.str",
+                soundName: "effect\\shc_shadow_exceed.wav",
+                attachedToTarget: false,
+                fallbackFileNames: ["shadow_exceed\\shadow_exceed_cast\\shadow_exceed_cast.str"]
+            ),
+        ],
+        "ef_shc_dancing_knife_cast": [
+            .str(
+                fileName: "shadow_cross\\shc_dancing_knife\\dancing_knife_cast\\dancing_knife_cast.str",
+                soundName: "effect\\shc_dancing_knife.wav",
+                attachedToTarget: false,
+                fallbackFileNames: ["dancing_knife\\dancing_knife_cast\\dancing_knife_cast.str"]
+            ),
+            .str(
+                fileName: "shadow_cross\\shc_dancing_knife\\dancing_knife_cast_bottom\\dancing_knife_cast_bottom.str",
+                attachedToTarget: false,
+                fallbackFileNames: ["dancing_knife\\dancing_knife_cast_bottom\\dancing_knife_cast_bottom.str"]
+            ),
+        ],
+        "ef_shc_savage_impact": [
+            .str(
+                fileName: "savage_impact\\savage_impact\\savage_impact.str",
+                soundName: "effect\\shc_savage_impact.wav",
+                attachedToTarget: false
+            ),
+        ],
+        "ef_shc_savage_impact_hit": [
+            .str(
+                fileName: "savage_impact\\savage_impact_hit\\savage_impact_hit.str",
+                attachedToTarget: false
+            ),
+        ],
+        "ef_shc_eternal_slash": [
+            .str(
+                fileName: "eternal_slash\\eternal_slash\\eternal_slash.str",
+                soundName: "effect\\shc_eternal_slash.wav",
+                attachedToTarget: false
+            ),
+            .str(
+                fileName: "eternal_slash\\eternal_slash_bottom\\eternal_slash_bottom.str",
+                attachedToTarget: false
+            ),
+        ],
+        "ef_shc_eternal_slash_hit": [
+            .str(
+                fileName: "eternal_slash\\eternal_slash_hit\\eternal_slash_hit.str",
+                attachedToTarget: false
+            ),
+        ],
+        "ef_shc_potent_venom": [
+            .str(
+                fileName: "new_potent_venom\\new_potent_venom.str",
+                soundName: "effect\\shc_potent_venom.wav",
+                attachedToTarget: false
+            ),
+        ],
+        "ef_shc_shadow_stab": [
+            .str(
+                fileName: "shadow_cross\\shc_shadow_stab\\shadow_stab\\shadow_stab.str",
+                soundName: "effect\\shc_shadow_stab.wav",
+                attachedToTarget: false,
+                fallbackFileNames: ["shadow_stab\\shadow_stab\\shadow_stab.str"]
+            ),
+        ],
+        "ef_shc_impact_crater": [
+            .str(
+                fileName: "shadow_cross\\shc_impact_crater\\impact_crater\\impact_crater.str",
+                soundName: "effect\\shc_impact_crater.wav",
+                attachedToTarget: false,
+                fallbackFileNames: ["impact_crater\\impact_crater\\impact_crater.str"]
+            ),
+            .str(
+                fileName: "shadow_cross\\shc_impact_crater\\impact_crater_bottom\\impact_crater_bottom.str",
+                attachedToTarget: false,
+                fallbackFileNames: ["impact_crater\\impact_crater_bottom\\impact_crater_bottom.str"]
+            ),
+        ],
+        "ef_shc_impact_crater_hit": [
+            .str(
+                fileName: "shadow_cross\\shc_impact_crater\\impact_crater_hit\\impact_crater_hit.str",
+                attachedToTarget: false,
+                fallbackFileNames: ["impact_crater\\impact_crater_hit\\impact_crater_hit.str"]
+            ),
+        ],
+        "ef_shc_enchanting_shadow": [
+            .str(
+                fileName: "shadow_cross\\shc_enchanting_shadow\\enchanting_shadow\\enchanting_shadow.str",
+                attachedToTarget: false,
+                fallbackFileNames: ["enchanting_shadow\\enchanting_shadow\\new_enchanting_shadow.str"]
+            ),
+            .str(
+                fileName: "shadow_cross\\shc_enchanting_shadow\\enchanting_shadow_bottom\\enchanting_shadow_bottom.str",
+                attachedToTarget: false,
+                fallbackFileNames: ["enchanting_shadow\\enchanting_shadow_bottom\\new_enchanting_shadow_bottom.str"]
+            ),
+        ],
+        "ef_shc_fatal_shadow_crow": [
+            .str(
+                fileName: "fatal_shadow_crow\\fatal_shadow_crow\\fatal_shadow_crow.str",
+                soundName: "effect\\shc_fatal_shadow_crow.wav",
+                attachedToTarget: false
+            ),
+            .str(
+                fileName: "fatal_shadow_crow\\fatal_shadow_crow_bottom\\fatal_shadow_crow_bottom.str",
+                attachedToTarget: false
+            ),
+        ],
+        "ef_shc_fatal_shadow_crow_hit": [
+            .str(
+                fileName: "fatal_shadow_crow\\fatal_shadow_crow_hit\\fatal_shadow_crow_hit.str",
+                attachedToTarget: false
             ),
         ]
     ]
