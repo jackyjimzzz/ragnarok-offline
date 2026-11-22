@@ -130,9 +130,9 @@ let adventurerScript = """
     	mes "[冒險服務員]";
     	mes "冒險者你好！需要什麼服務呢？";
     	next;
-    	switch (select("傳送服務:治療與祝福:重置素質/技能:倉庫與存檔點:鑑定/修理裝備:轉職服務:領取冒險補給:道具商店:一鍵升到 200 等:領取 200 等套裝:不用了")) {
+    	switch (select("傳送服務:治療與祝福:重置素質/技能:倉庫與存檔點:鑑定/修理裝備:轉職服務:領取冒險補給:道具商店:一鍵升滿等級與素質:領取 200 等套裝:租借坐騎與獵鷹:不用了")) {
     	case 1:
-    		switch (select("城鎮:迷宮:上次傳送的地點")) {
+    		switch (select("城鎮:迷宮:副本入口:上次傳送的地點")) {
     		case 1:
     			setarray .@name$, "普隆德拉","依斯魯德","吉芬","夢羅克","斐揚","艾爾貝塔","艾爾帕蘭","朱諾","克魔島","汶巴拉","尼芙菲姆","天津","崑崙","洛陽","阿約塔雅","艾音布羅克","里希塔樂鎮","雨果","拉赫","維恩斯","聖誕村","莫斯科維亞";
     			setarray .@map$, "prontera","izlude","geffen","morocc","payon","alberta","aldebaran","yuno","comodo","umbala","niflheim","amatsu","gonryun","louyang","ayothaya","einbroch","lighthalzen","hugel","rachel","veins","xmas","moscovia";
@@ -186,6 +186,21 @@ let adventurerScript = """
     			.@wy = atoi(.@p$[2]);
     			goto L_DoWarp;
     		case 3:
+    			setarray .@name$, "無限塔","半獸人的記憶","封印神殿","尼德霍格巢穴","舊格拉斯海姆","空中要塞","惡魔之塔","波利村","臉蟲巢穴","鬼魂宮殿","恐怖玩具工廠","莫斯洞窟","魔神殿","拜歐斯之島","章魚洞窟","馬朗島地下水道","週末迷宮","週五迷宮","飛空艇襲擊","中央研究所","心靈獵人戰爭基地","無限空間";
+    			setarray .@map$, "alberta","gef_fild10","monk_test","nyd_dun02","glast_01","prt_q","dali02","prt_fild05","payon","dali02","xmas","moro_cav","moro_cav","moro_cav","mal_dun01","mal_in01","pay_arche","gef_tower","dali02","verus01","ein_fild04","cmd_fild07";
+    			setarray .@x, 214,242,309,100,204,249,134,174,157,43,237,61,41,50,153,172,44,57,136,153,275,54;
+    			setarray .@y, 77,202,146,201,273,82,119,238,54,129,303,69,73,64,237,28,124,170,79,155,342,280;
+    			mes "[冒險服務員]";
+    			mes "會把你傳到副本入口的 NPC 旁邊。";
+    			mes "副本大多要先組隊才能進入，";
+    			mes "一個人可以先輸入 @party 隊伍名稱。";
+    			next;
+    			.@i = select(implode(.@name$, ":")) - 1;
+    			.@wm$ = .@map$[.@i];
+    			.@wx = .@x[.@i];
+    			.@wy = .@y[.@i];
+    			goto L_DoWarp;
+    		case 4:
     			if (ragoff_lastmap$ == "") {
     				mes "[冒險服務員]";
     				mes "你還沒有用我傳送過喔。";
@@ -328,17 +343,58 @@ let adventurerScript = """
     		end;
     	case 9:
     		mes "[冒險服務員]";
-    		mes "要把基本等級直接升到 200 嗎？";
-    		mes "職業等級也會一起升到上限。";
-    		mes "（上限比 200 低的職業會停在上限。）";
+    		mes "要把基本等級和職業等級";
+    		mes "直接升到目前職業的最高等級，";
+    		mes "並把所有素質（含特性）點滿嗎？";
     		next;
-    		if (select("升級:取消") == 2)
+    		if (select("升級並點滿:取消") == 2)
     			close;
-    		if (BaseLevel < 200)
-    			atcommand "@blvl " + (200 - BaseLevel);
-    		atcommand "@jlvl 100";
+    		atcommand "@blvl 999";
+    		atcommand "@jlvl 999";
+    		atcommand "@allstats";
+    		atcommand "@pow 999";
+    		atcommand "@sta 999";
+    		atcommand "@wis 999";
+    		atcommand "@spl 999";
+    		atcommand "@con 999";
+    		atcommand "@crt 999";
     		mes "[冒險服務員]";
-    		mes "升級完成！記得去分配素質點和技能點喔。";
+    		mes "完成！等級和素質都已經到上限了。";
+    		mes "（沒有特性的職業，特性不會變動）";
+    		close;
+
+    	case 11:
+    		mes "[冒險服務員]";
+    		mes "要租借什麼呢？";
+    		mes "（職業不符合或沒學相關技能的話不會有變化）";
+    		next;
+    		switch (select("職業坐騎（大嘴鳥/龍/獅鷲/魔導機甲/座狼）:獵鷹:狼（遊俠）:手推車:全部歸還:取消")) {
+    		case 1:
+    			atcommand "@mount";
+    			break;
+    		case 2:
+    			setfalcon;
+    			break;
+    		case 3:
+    			setoption Option_Wug,1;
+    			break;
+    		case 4:
+    			setcart;
+    			break;
+    		case 5:
+    			setriding 0;
+    			setdragon 0;
+    			setmadogear 0;
+    			setfalcon 0;
+    			setcart 0;
+    			setoption Option_Wug,0;
+    			setoption Option_Wugrider,0;
+    			break;
+    		default:
+    			close;
+    		}
+    		mes "[冒險服務員]";
+    		mes "好了！";
     		close;
 
     	case 10:
