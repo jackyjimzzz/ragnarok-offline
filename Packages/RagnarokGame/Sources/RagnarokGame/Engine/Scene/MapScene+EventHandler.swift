@@ -433,7 +433,7 @@ extension MapScene {
 
         let hits = MapObjectHit.hits(for: objectSkill)
 
-        addCombatTexts(for: hits, targetObjectID: objectSkill.targetObjectID, now: now)
+        addCombatTexts(for: hits, targetObjectID: objectSkill.targetObjectID, hitSoundName: hitSoundName(forSkill: objectSkill), now: now)
 
         addSkillBeforeHitEffects(for: objectSkill, hits: hits)
         addSkillHitEffects(for: objectSkill, hits: hits)
@@ -668,7 +668,7 @@ extension MapScene {
               objects[objectSkill.sourceObjectID] != nil,
               objects[objectSkill.targetObjectID] != nil,
               let targetPosition = objects[objectSkill.targetObjectID]?.gridPosition,
-              objectSkill.damageType != .splash, objectSkill.damageType != .splash_endure else {
+              ragOffShouldPlaySplashEffects(for: objectSkill, kind: "effects") else {
             return
         }
 
@@ -692,7 +692,7 @@ extension MapScene {
     private func addSkillCasterEffects(for objectSkill: MapObjectSkill) {
         guard let skillID = objectSkill.skillID,
               let sourcePosition = objects[objectSkill.sourceObjectID]?.gridPosition,
-              objectSkill.damageType != .splash, objectSkill.damageType != .splash_endure else {
+              ragOffShouldPlaySplashEffects(for: objectSkill, kind: "caster") else {
             return
         }
 
@@ -755,4 +755,46 @@ extension MapScene {
             return JobHitSoundTable.hitSoundNames(forJob: targetObject.job).randomElement()
         }
     }
+
+    /// [RagOff iPad Mod] Hit sound for skill damage, chosen the same way as for normal attacks.
+    private func hitSoundName(forSkill objectSkill: MapObjectSkill) -> String? {
+        guard objectSkill.damage > 0,
+              let targetObject = objects[objectSkill.targetObjectID] else {
+            return nil
+        }
+
+        let sourceObject = objects[objectSkill.sourceObjectID]
+        let targetJob = SpriteJob(rawValue: targetObject.job)
+
+        if targetJob.isPlayer {
+            return JobHitSoundTable.hitSoundNames(forJob: targetObject.job).randomElement()
+        } else if let sourceObject, SpriteJob(rawValue: sourceObject.job).isPlayer {
+            let weaponHitSoundName = WeaponHitSoundTable.hitSoundNames(for: sourceObject.weaponType).randomElement()
+            return weaponHitSoundName ?? JobHitSoundTable.hitSoundNames(forJob: targetObject.job).randomElement()
+        } else {
+            return JobHitSoundTable.hitSoundNames(forJob: targetObject.job).randomElement()
+        }
+    }
+
+    /// [RagOff iPad Mod] Splash skills report one packet per target. Play their skill and caster
+    /// effects (and the sounds attached to them) only once per skill use instead of skipping them.
+    private func ragOffShouldPlaySplashEffects(for objectSkill: MapObjectSkill, kind: String) -> Bool {
+        guard objectSkill.damageType == .splash || objectSkill.damageType == .splash_endure else {
+            return true
+        }
+        guard let skillID = objectSkill.skillID else {
+            return false
+        }
+
+        let key = "\(kind)-\(objectSkill.sourceObjectID)-\(skillID)"
+        let now = CACurrentMediaTime()
+        if let lastTime = ragOffSplashEffectTimes[key], now - lastTime < 0.5 {
+            return false
+        }
+        ragOffSplashEffectTimes[key] = now
+        return true
+    }
 }
+
+/// [RagOff iPad Mod] Last time a splash skill's effects were played, keyed by kind, source and skill.
+nonisolated(unsafe) private var ragOffSplashEffectTimes: [String : CFTimeInterval] = [:]
