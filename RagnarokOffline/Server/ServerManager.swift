@@ -285,11 +285,11 @@ let adventurerScript = """
     			setarray .@jid, 4060,4061,4062,4063,4064,4065,4073,4074,4075,4076,4077,4078,4079;
     			break;
     		case 5:
-    			setarray .@jname$, "Dragon Knight","Meister","Shadow Cross","Arch Mage","Cardinal","Windhawk","Imperial Guard","Biolo","Abyss Chaser","Elemental Master","聖裁者 (Inquisitor)","Troubadour","Trouvere";
+    			setarray .@jname$, "盧恩龍爵 (Dragon Knight)","機甲神匠 (Meister)","十字影武 (Shadow Cross)","禁咒魔導士 (Arch Mage)","樞機主教 (Cardinal)","風鷹狩獵者 (Windhawk)","帝國聖衛軍 (Imperial Guard)","生命締造者 (Biolo)","深淵追跡者 (Abyss Chaser)","元素支配者 (Elemental Master)","聖裁者 (Inquisitor)","天籟頌者 (Troubadour)","樂之舞靈 (Trouvere)";
     			setarray .@jid, 4252,4253,4254,4255,4256,4257,4258,4259,4260,4261,4262,4263,4264;
     			break;
     		case 6:
-    			setarray .@jname$, "擴充超級初學者 (Expanded Super Novice)","星帝 (Star Emperor)","Soul Reaper","叛亂者 (Rebellion)","影狼 (Kagerou)","朧 (Oboro)","喵族召喚師 (Summoner)","Sky Emperor","Soul Ascetic","Shinkiro","Shiranui","Night Watch","Hyper Novice","Spirit Handler";
+    			setarray .@jname$, "擴充超級初學者 (Expanded Super Novice)","拳皇 (Star Emperor)","獵靈士 (Soul Reaper)","叛亂者 (Rebellion)","影狼 (Kagerou)","朧 (Oboro)","召喚師 (Summoner)","天帝 (Sky Emperor)","魂靈苦行者 (Soul Ascetic)","蜃氣樓 (Shinkiro)","幻朧 (Shiranui)","夜行者 (Night Watch)","極限初學者 (Hyper Novice)","魂靈師 (Spirit Handler)";
     			setarray .@jid, 4190,4239,4240,4215,4211,4212,4218,4302,4303,4304,4305,4306,4307,4308;
     			break;
     		default:
