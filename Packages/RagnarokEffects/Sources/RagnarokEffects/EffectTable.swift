@@ -1452,10 +1452,11 @@ public enum EffectTable {
     }
 
     public static func definitions(for effectID: EffectID) -> [EffectDefinition] {
-        table[effectID] ?? []
+        // [RagOff iPad Mod] Fall back to the extra effects in EffectTable+RagOff.swift.
+        table[effectID] ?? RagOffEffectTable.idTable[effectID] ?? []
     }
 
     public static func definitions(forEffectName effectName: String) -> [EffectDefinition] {
-        namedTable[effectName] ?? []
+        namedTable[effectName] ?? RagOffEffectTable.namedTable[effectName] ?? []
     }
 }
