@@ -438,6 +438,7 @@ extension MapScene {
         addSkillBeforeHitEffects(for: objectSkill, hits: hits)
         addSkillHitEffects(for: objectSkill, hits: hits)
         addSkillEffects(for: objectSkill)
+        addSkillCasterEffects(for: objectSkill)
         addSkillSuccessEffects(for: objectSkill)
     }
 
@@ -682,6 +683,29 @@ extension MapScene {
                 targetObjectID: objectSkill.targetObjectID,
                 ownerObjectID: nil,
                 delay: TimeInterval(objectSkill.attackDelay) / 1000
+            )
+            effects[effect.id] = effect
+        }
+    }
+
+    /// [RagOff iPad Mod] Plays the skill's caster effects on the caster once per skill use.
+    private func addSkillCasterEffects(for objectSkill: MapObjectSkill) {
+        guard let skillID = objectSkill.skillID,
+              let sourcePosition = objects[objectSkill.sourceObjectID]?.gridPosition,
+              objectSkill.damageType != .splash, objectSkill.damageType != .splash_endure else {
+            return
+        }
+
+        let currentTime = CACurrentMediaTime()
+
+        for effectReference in SkillEffectTable.casterEffects(for: skillID) {
+            let effect = MapSceneEffect(
+                reference: effectReference,
+                creationTime: currentTime,
+                gridPosition: sourcePosition,
+                sourceWorldPosition: worldPosition(forObjectID: objectSkill.sourceObjectID),
+                targetObjectID: objectSkill.sourceObjectID,
+                ownerObjectID: nil
             )
             effects[effect.id] = effect
         }
