@@ -168,27 +168,31 @@ public enum SkillEffectTable {
         ),
     ]
 
+    private static func entry(for skillID: SkillID) -> SkillEffectDefinition? {
+        table[skillID] ?? RagOffSkillEffectTable.table[skillID]
+    }
+
     public static func beginCastEffects(for skillID: SkillID) -> [EffectReference] {
-        table[skillID]?.beginCastEffects ?? []
+        entry(for: skillID)?.beginCastEffects ?? []
     }
 
     public static func effects(for skillID: SkillID) -> [EffectReference] {
-        table[skillID]?.effects ?? []
+        entry(for: skillID)?.effects ?? []
     }
 
     public static func beforeHitEffects(for skillID: SkillID) -> [EffectReference] {
-        table[skillID]?.beforeHitEffects ?? []
+        entry(for: skillID)?.beforeHitEffects ?? []
     }
 
     public static func hitEffects(for skillID: SkillID) -> [EffectReference] {
-        table[skillID]?.hitEffects ?? []
+        entry(for: skillID)?.hitEffects ?? []
     }
 
     public static func successEffects(for skillID: SkillID) -> [EffectReference] {
-        table[skillID]?.successEffects ?? []
+        entry(for: skillID)?.successEffects ?? []
     }
 
     public static func casterEffects(for skillID: SkillID) -> [EffectReference] {
-        table[skillID]?.casterEffects ?? []
+        entry(for: skillID)?.casterEffects ?? []
     }
 }
