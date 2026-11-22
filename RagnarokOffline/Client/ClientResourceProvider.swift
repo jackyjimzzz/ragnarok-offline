@@ -50,10 +50,13 @@ final class LocalClientResourceProvider: ResourceProvider {
     init(url: URL) {
         self.url = url
 
-        let grfURL = url.appending(path: "data.grf")
-        grfArchives = [
-            GRFArchive(url: grfURL),
-        ]
+        // [RagOff iPad Mod] Read several GRF archives in priority order, like the PC client's DATA.INI.
+        // Archives that are not in the folder are skipped.
+        let grfNames = ["twdata.grf", "data.grf", "twdata0_lite.grf"]
+        grfArchives = grfNames
+            .map { url.appending(path: $0) }
+            .filter { FileManager.default.fileExists(atPath: $0.path(percentEncoded: false)) }
+            .map { GRFArchive(url: $0) }
     }
 
     func contentsOfResource(at path: ResourcePath) async throws -> Data {
