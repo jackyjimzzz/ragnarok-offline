@@ -93,6 +93,79 @@ public enum SkillEffectTable {
         .all_resurrection: .init(
             effects: [.id(.ef_resurrection), .id(.ef_revive)]
         ),
+        // [RagOff iPad Mod] Thief / Assassin / Guillotine Cross / Shadow Cross skills,
+        // ported from roBrowserLegacy SkillEffect.js (effects that use the STR or WAV format).
+        .as_cloaking: .init(
+            effects: [.id(.ef_cloaking)]
+        ),
+        .as_sonicblow: .init(
+            effects: [.id(.ef_sonicblow2)]
+        ),
+        .as_poisonreact: .init(
+            effects: [.id(.ef_poisonreact)],
+            hitEffects: [.id(.ef_poisonreact2)]
+        ),
+        .as_venomdust: .init(
+            effects: [.id(.ef_venomdust)]
+        ),
+        .as_splasher: .init(
+            effects: [.id(.ef_splasher)]
+        ),
+        .asc_edp: .init(
+            effects: [.id(.ef_edp)]
+        ),
+        .gc_crossimpact: .init(
+            effects: [.name("ef_gc_crossimpact")]
+        ),
+        .gc_poisoningweapon: .init(
+            effects: [.name("ef_gc_poisoningweapon")]
+        ),
+        .gc_counterslash: .init(
+            effects: [.name("ef_gc_counterslash")]
+        ),
+        .gc_poisonsmoke: .init(
+            effects: [.name("ef_gc_poisonsmoke")]
+        ),
+        .gc_hallucinationwalk: .init(
+            effects: [.name("ef_hallucinationwalk")]
+        ),
+        .gc_crossripperslasher: .init(
+            effects: [.name("ef_gc_crossripperslasher")]
+        ),
+        .gc_darkcrow: .init(
+            effects: [.id(.ef_gc_darkcrow)]
+        ),
+        .shc_shadow_exceed: .init(
+            casterEffects: [.name("ef_shc_shadow_exceed_cast")]
+        ),
+        .shc_dancing_knife: .init(
+            casterEffects: [.name("ef_shc_dancing_knife_cast")]
+        ),
+        .shc_savage_impact: .init(
+            effects: [.name("ef_shc_savage_impact")],
+            hitEffects: [.name("ef_shc_savage_impact_hit")]
+        ),
+        .shc_eternal_slash: .init(
+            effects: [.name("ef_shc_eternal_slash")],
+            hitEffects: [.name("ef_shc_eternal_slash_hit")]
+        ),
+        .shc_potent_venom: .init(
+            effects: [.name("ef_shc_potent_venom")]
+        ),
+        .shc_shadow_stab: .init(
+            effects: [.name("ef_shc_shadow_stab")]
+        ),
+        .shc_impact_crater: .init(
+            effects: [.name("ef_shc_impact_crater")],
+            hitEffects: [.name("ef_shc_impact_crater_hit")]
+        ),
+        .shc_enchanting_shadow: .init(
+            effects: [.name("ef_shc_enchanting_shadow")]
+        ),
+        .shc_fatal_shadow_crow: .init(
+            effects: [.name("ef_shc_fatal_shadow_crow")],
+            hitEffects: [.name("ef_shc_fatal_shadow_crow_hit")]
+        ),
     ]
 
     public static func beginCastEffects(for skillID: SkillID) -> [EffectReference] {
@@ -113,5 +186,9 @@ public enum SkillEffectTable {
 
     public static func successEffects(for skillID: SkillID) -> [EffectReference] {
         table[skillID]?.successEffects ?? []
+    }
+
+    public static func casterEffects(for skillID: SkillID) -> [EffectReference] {
+        table[skillID]?.casterEffects ?? []
     }
 }
