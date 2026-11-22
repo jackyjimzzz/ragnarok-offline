@@ -62,7 +62,23 @@ public struct EffectAssetLoader: Sendable {
             return .spr(effect, animation: animation)
         case .str(let definition):
             let effect = STREffect(definition: definition)
-            let animation = try await loadSTRAnimation(fileName: effect.fileName)
+            // [RagOff iPad Mod] Try the fallback files when the main file is missing.
+            let animation: STREffectAnimation
+            do {
+                animation = try await loadSTRAnimation(fileName: effect.fileName)
+            } catch {
+                var fallbackAnimation: STREffectAnimation?
+                for fallbackFileName in definition.fallbackFileNames {
+                    if let loadedAnimation = try? await loadSTRAnimation(fileName: fallbackFileName) {
+                        fallbackAnimation = loadedAnimation
+                        break
+                    }
+                }
+                guard let fallbackAnimation else {
+                    throw error
+                }
+                animation = fallbackAnimation
+            }
             return .str(effect, animation: animation)
         case .wav(let definition):
             let effect = WAVEffect(definition: definition)
@@ -122,10 +138,21 @@ public struct EffectAssetLoader: Sendable {
 
             var textureImages: [String : CGImage] = [:]
             let textureNames = Set(str.layers.flatMap(\.textures))
+            // [RagOff iPad Mod] Newer effects keep their textures next to the STR file,
+            // so look in the STR file's folder first, then in the effect folder.
+            let strDirectory = fileName.split(separator: "\\").dropLast().joined(separator: "\\")
             for textureName in textureNames {
-                let texturePath = ResourcePath.effectDirectory.appending(subpath: textureName)
-                if let image = try? await resourceManager.image(at: texturePath, removesMagentaPixels: true) {
-                    textureImages[textureName] = image.cgImage
+                var image: CGImage?
+                if !strDirectory.isEmpty {
+                    let nearbyTexturePath = ResourcePath.effectDirectory.appending(subpath: strDirectory + "\\" + textureName)
+                    image = try? await resourceManager.image(at: nearbyTexturePath, removesMagentaPixels: true).cgImage
+                }
+                if image == nil {
+                    let texturePath = ResourcePath.effectDirectory.appending(subpath: textureName)
+                    image = try? await resourceManager.image(at: texturePath, removesMagentaPixels: true).cgImage
+                }
+                if let image {
+                    textureImages[textureName] = image
                 }
             }
 
