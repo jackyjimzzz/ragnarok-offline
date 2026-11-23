@@ -77,6 +77,8 @@ struct MapSceneView: View {
                         presentedMenuItem = item
                     }
                 }
+                // [RagOff iPad Mod] Bigger menu icons for fingers.
+                .scaleEffect(1.5, anchor: .topLeading)
             }
         }
         .overlay(alignment: .topTrailing) {
@@ -105,6 +107,7 @@ struct MapSceneView: View {
                     StatusView(status: playSession.playerStatus) {
                         presentedMenuItem = nil
                     }
+                    .scaleEffect(1.3)
                 case .equipment:
                     EquipmentView {
                         presentedMenuItem = nil
@@ -125,21 +128,25 @@ struct MapSceneView: View {
                     OptionsView(isPlayerDead: runtime.scene.state.isPlayerDead) {
                         presentedMenuItem = nil
                     }
+                    .scaleEffect(1.3)
                 }
             }
         }
         .overlay(alignment: .center) {
             if let dialog = playSession.dialog {
                 NPCDialogView(dialog: dialog)
+                    .scaleEffect(1.3)
             }
             if let warpList = playSession.warpList {
                 WarpListView(warpList: warpList)
+                    .scaleEffect(1.3)
             }
             if let npcShop = playSession.npcShop {
                 NPCShopView(shop: npcShop)
             }
             if playSession.dealSelectionNPCID != nil {
                 NPCShopDealTypeView()
+                    .scaleEffect(1.3)
             }
             if let storage = playSession.storage {
                 StorageView(storage: storage)
