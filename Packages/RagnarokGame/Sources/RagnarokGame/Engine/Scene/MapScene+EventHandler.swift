@@ -251,6 +251,11 @@ extension MapScene {
         }
     }
 
+    /// [RagOff iPad Mod] Keeps the raw effect state bits so mounts and the falcon can be drawn.
+    public func ragOffUpdateEffectStateRaw(objectID: GameObjectID, rawValue: Int) {
+        objects[objectID]?.effectStateRaw = rawValue
+    }
+
     public func onMapObjectSpriteChanged(objectID: GameObjectID, look: Look, value: Int, value2: Int) {
         guard let mapObject = objects[objectID] else {
             return
