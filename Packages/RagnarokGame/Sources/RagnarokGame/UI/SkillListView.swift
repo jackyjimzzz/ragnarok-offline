@@ -22,18 +22,29 @@ struct SkillListView: View {
     var body: some View {
         VStack(spacing: 3) {
             GameWindow {
+                // [RagOff iPad Mod] Skill tree layout: skills grouped by job, like the skill simulator.
                 ScrollView {
-                    LazyVStack(spacing: 0) {
-                        ForEach(skillList.sortedSkills, id: \.skillID) { skill in
-                            SkillListRow(skill: skill, isSelected: (selectedSkillID == skill.skillID))
-                                .onTapGesture {
-                                    selectedSkillID = skill.skillID
+                    LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+                        ForEach(ragOffSkillGroups) { group in
+                            Section {
+                                ForEach(group.skills, id: \.skillID) { skill in
+                                    SkillListRow(skill: skill, isSelected: (selectedSkillID == skill.skillID))
+                                        .onTapGesture {
+                                            selectedSkillID = skill.skillID
+                                        }
+                                        .shortcutDragSource(shortcut(for: skill))
                                 }
-                                .shortcutDragSource(shortcut(for: skill))
+                            } header: {
+                                RagOffSkillGroupHeader(
+                                    title: group.title,
+                                    learnedCount: group.skills.filter { $0.level > 0 }.count,
+                                    totalCount: group.skills.count
+                                )
+                            }
                         }
                     }
                 }
-                .frame(height: 220)
+                .frame(height: 380)
             } bottomBar: {
                 GameBottomBar()
                     .overlay(alignment: .leading) {
@@ -47,7 +58,7 @@ struct SkillListView: View {
             .gameWindowCloseAction(onClose)
             .geometryGroup()
             .blur(radius: selectedSkillID == nil ? 0 : 5)
-            .frame(width: 320)
+            .frame(width: 400)
             .overlay {
                 if selectedSkillID != nil {
                     Color.clear
@@ -86,6 +97,10 @@ struct SkillListView: View {
             }
             .padding(.vertical, 20)
         }
+    }
+
+    private var ragOffSkillGroups: [RagOffSkillGroup] {
+        RagOffSkillGroup.groups(for: skillList.sortedSkills)
     }
 
     /// Only a learned, active skill can be put in the shortcut bar.
@@ -156,7 +171,7 @@ private struct SkillListRow: View {
                             .interpolation(.none)
                     }
                 }
-                .frame(width: 24, height: 24)
+                .frame(width: 32, height: 32)
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(skillName)
@@ -189,12 +204,12 @@ private struct SkillListRow: View {
             SkillUpgradeButton {
                 upgradeSkillLevel?(skillID: skill.skillID)
             }
-            .frame(width: 30, height: 24)
+            .frame(width: 44, height: 40)
             .opacity(isUpgradable ? 1 : 0)
             .disabled(!isUpgradable)
             .padding(.trailing, 2)
         }
-        .frame(height: 36)
+        .frame(height: 48)
         .background(skillBackgroundColor)
         .contentShape(Rectangle())
         .task(id: skill.skillID) {
@@ -238,6 +253,10 @@ private struct SkillUpgradeButton: View {
         }
         .buttonStyle(.game)
         .frame(width: 24, height: 24)
+        // [RagOff iPad Mod] Bigger "Lv UP" button for fingers.
+        .scaleEffect(1.5)
+        .frame(width: 40, height: 40)
+        .contentShape(Rectangle())
     }
 }
 
@@ -363,4 +382,86 @@ private struct SkillActions: View {
         .padding()
         .environment(GameContext.testing)
         .environment(playSession)
+}
+
+// MARK: - [RagOff iPad Mod] Skill tree groups
+
+private struct RagOffSkillGroup: Identifiable {
+    var id: String
+    var title: String
+    var order: Int
+    var skills: [SkillInfo]
+
+    static func groups(for skills: [SkillInfo]) -> [RagOffSkillGroup] {
+        var groupsByID: [String : RagOffSkillGroup] = [:]
+        for skill in skills {
+            let prefix: String
+            if let skillID = SkillID(rawValue: skill.skillID) {
+                prefix = String(skillID.stringValue.uppercased().split(separator: "_").first ?? "")
+            } else {
+                prefix = ""
+            }
+            let title = ragOffSkillGroupTitles[prefix]
+            let groupID = title == nil ? "OTHER" : prefix
+            if groupsByID[groupID] == nil {
+                groupsByID[groupID] = RagOffSkillGroup(
+                    id: groupID,
+                    title: title ?? "其他技能",
+                    order: title == nil ? Int.max : skill.skillID,
+                    skills: []
+                )
+            }
+            groupsByID[groupID]?.skills.append(skill)
+            if title != nil, let current = groupsByID[groupID], skill.skillID < current.order {
+                groupsByID[groupID]?.order = skill.skillID
+            }
+        }
+        return groupsByID.values.sorted {
+            $0.order != $1.order ? $0.order < $1.order : $0.id < $1.id
+        }
+    }
+}
+
+private let ragOffSkillGroupTitles: [String : String] = [
+    "NV": "初學者", "SM": "劍士", "MG": "魔法師", "AC": "弓箭手", "AL": "服事", "MC": "商人", "TF": "盜賊",
+    "KN": "騎士", "CR": "十字軍／創造者", "WZ": "巫師", "SA": "賢者", "HT": "獵人", "BA": "詩人", "DC": "舞孃",
+    "BD": "合奏技能", "PR": "祭司", "MO": "武僧", "BS": "鐵匠", "AM": "鍊金術師", "AS": "刺客", "RG": "流氓",
+    "LK": "騎士領主", "PA": "聖殿十字軍", "HW": "超魔導士", "PF": "智者", "SN": "神射手", "CG": "搞笑藝人／冷豔舞姬",
+    "HP": "神官", "CH": "武術宗師", "WS": "神工匠", "ASC": "十字刺客", "ST": "神行太保",
+    "TK": "跆拳", "SG": "拳聖", "SL": "悟靈士", "SJ": "星帝", "SP": "魂靈師", "GS": "槍手", "RL": "反叛者",
+    "NJ": "忍者", "KO": "影狼／朧", "KG": "影狼", "OB": "朧", "SU": "喵族",
+    "RK": "盧恩騎士", "LG": "皇家禁衛隊", "WL": "咒術士", "SO": "妖術師", "RA": "遊俠", "WM": "漫遊者／宮廷樂師",
+    "MI": "宮廷樂師", "WA": "漫遊者", "AB": "大主教", "SR": "修羅", "NC": "機械工匠", "GN": "基因學者",
+    "GC": "十字斬首者", "SC": "魅影追蹤者",
+    "DK": "盧恩龍爵", "IG": "帝國聖衛軍", "AG": "禁咒魔導士", "EM": "元素支配者", "WH": "風鷹狩獵者",
+    "TR": "天籟頌者／樂之舞靈", "CD": "樞機主教", "IQ": "聖裁者", "MT": "機甲神匠", "BO": "生命締造者",
+    "SHC": "十字影武", "ABC": "深淵追跡者",
+    "SKE": "天帝", "SOA": "魂靈苦行者", "SH": "喵族四轉", "SS": "蜃氣樓／幻朧", "NW": "夜行者", "HN": "極限初學者",
+    "ALL": "通用技能",
+]
+
+private struct RagOffSkillGroupHeader: View {
+    var title: String
+    var learnedCount: Int
+    var totalCount: Int
+
+    var body: some View {
+        HStack {
+            Text(verbatim: title)
+                .font(.game(size: 13, weight: .bold))
+                .foregroundStyle(Color.gameProminentLabel)
+            Spacer()
+            Text(verbatim: "\(learnedCount) / \(totalCount)")
+                .font(.game(size: 11))
+                .foregroundStyle(Color.gameLabel)
+        }
+        .padding(.horizontal, 12)
+        .frame(height: 28)
+        .background(Color(#colorLiteral(red: 0.8705882353, green: 0.9098039216, blue: 0.9725490196, alpha: 1)))
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Color.gameBoxBorder)
+                .frame(height: 1)
+        }
+    }
 }
