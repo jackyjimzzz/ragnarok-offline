@@ -34,6 +34,8 @@ final class MapSceneMapObject {
     var bodyState: StatusChangeOption1
     var healthState: StatusChangeOption2
     var effectState: StatusChangeOption
+    /// [RagOff iPad Mod] Raw effect state bits (riding, falcon, mado gear, ...).
+    var effectStateRaw: Int = 0
 
     var gridPosition: SIMD2<Int>
 
@@ -88,6 +90,7 @@ final class MapSceneMapObject {
         bodyState = StatusChangeOption1(rawValue: character.bodyState) ?? .none
         healthState = StatusChangeOption2(rawValue: character.healthState) ?? .none
         effectState = StatusChangeOption(rawValue: character.effectState) ?? .nothing
+        effectStateRaw = character.effectState
 
         self.gridPosition = gridPosition
 
