@@ -20,10 +20,11 @@ public struct STREffectAnimation: Sendable {
     }
 
     public init(str: STR, textureImages: [String : CGImage]) {
-        fps = Int(str.fps)
+        // [RagOff iPad Mod] Guard against broken STR headers (zero fps, negative frame counts).
+        fps = max(Int(str.fps), 1)
 
         var frames: [STREffectAnimation.Frame] = []
-        let frameCount = str.maxKeyframeIndex + 1
+        let frameCount = min(max(str.maxKeyframeIndex + 1, 0), 10000)
         for frameIndex in 0..<frameCount {
             var sprites: [STREffectAnimation.Sprite] = []
 
@@ -58,7 +59,7 @@ public struct STREffectAnimation: Sendable {
                 let to    = toId > -1 ? layer.keyframes[toId] : nil
                 let delta = frameIndex - from.frameIndex
 
-                guard from.textureIndex > -1 else {
+                guard from.textureIndex.isFinite, from.textureIndex > -1 else {
                     continue
                 }
 
@@ -69,7 +70,12 @@ public struct STREffectAnimation: Sendable {
                         continue
                     }
 
-                    let textureName = layer.textures[Int(from.textureIndex)]
+                    // [RagOff iPad Mod] Skip keyframes that point at a texture the layer does not have.
+                    let staticTextureIndex = Int(from.textureIndex)
+                    guard layer.textures.indices.contains(staticTextureIndex) else {
+                        continue
+                    }
+                    let textureName = layer.textures[staticTextureIndex]
                     let sprite = STREffectAnimation.Sprite(
                         uv: from.uv,
                         xy: from.xy,
@@ -91,6 +97,9 @@ public struct STREffectAnimation: Sendable {
 
                 // Morph animation: compute texture index based on animationType
                 let textureCount = layer.textures.count
+                guard textureCount > 0 else {
+                    continue
+                }
                 let rawFrame: Float
                 switch to.animationType {
                 case 1: // normal
@@ -110,7 +119,9 @@ public struct STREffectAnimation: Sendable {
                 default: // bug fix
                     rawFrame = 0
                 }
-                let textureIndex = max(0, min(Int(rawFrame), textureCount - 1))
+                // [RagOff iPad Mod] Clamp before converting, so NaN or huge values cannot trap.
+                let clampedFrame = rawFrame.isFinite ? max(0, min(rawFrame, Float(textureCount - 1))) : 0
+                let textureIndex = Int(clampedFrame)
                 let textureName = layer.textures[textureIndex]
 
                 let uv = from.uv + to.uv * Float(delta)
