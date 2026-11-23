@@ -5,6 +5,7 @@
 //  Created by Leon Li on 2025/5/12.
 //
 
+import RagnarokCore
 import RagnarokResources
 import RagnarokScript
 
@@ -145,6 +146,20 @@ extension ComposedSprite {
                 }
 
                 return parts
+            }
+
+            // [RagOff iPad Mod] Draw the hunter falcon next to the character.
+            if configuration.ragOffFalcon > 0 {
+                let falconName = switch configuration.ragOffFalcon {
+                case 2: K2L("매2")
+                case 3: "owl"
+                case 4: "windhawk_hawk"
+                default: K2L("매")
+                }
+                let falconPath = ResourcePath.spriteDirectory.appending([K2L("이팩트"), falconName])
+                if let falconSprite = try? await resourceManager.sprite(at: falconPath) {
+                    parts.append(ComposedSprite.Part(sprite: falconSprite, semantic: .falcon))
+                }
             }
 
             if configuration.job.isBabyPlayer {
