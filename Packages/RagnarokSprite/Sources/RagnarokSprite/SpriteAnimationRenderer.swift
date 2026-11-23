@@ -107,7 +107,7 @@ final public class SpriteAnimationRenderer: Sendable {
                 continue
             }
 
-            let actionIndex = (part.semantic == .shadow ? 0 : actionIndex)
+            let actionIndex = part.ragOffActionIndex(actionIndex)
             let scale = self.scale * CGFloat(part.scaleFactor)
 
             let actionNode = SpriteRenderNode(
