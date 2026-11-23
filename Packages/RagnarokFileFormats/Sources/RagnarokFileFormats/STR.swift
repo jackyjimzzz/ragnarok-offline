@@ -34,7 +34,8 @@ public struct STR: FileFormat {
 
         _ = try decoder.decode([UInt8].self, count: 16)
 
-        for _ in 0..<layerCount {
+        // [RagOff iPad Mod] A negative count would trap when building the range.
+        for _ in 0..<max(layerCount, 0) {
             let layer = try decoder.decode(STR.Layer.self)
             layers.append(layer)
         }
@@ -48,13 +49,13 @@ extension STR {
 
         public init(from decoder: BinaryDecoder) throws {
             let textureCount = try decoder.decode(Int32.self)
-            for _ in 0..<textureCount {
+            for _ in 0..<max(textureCount, 0) {
                 let texture = try decoder.decode(String.self, lengthOfBytes: 128, encoding: .ascii)
                 textures.append(texture)
             }
 
             let keyframeCount = try decoder.decode(Int32.self)
-            for _ in 0..<keyframeCount {
+            for _ in 0..<max(keyframeCount, 0) {
                 let keyframe = try decoder.decode(STR.Keyframe.self)
                 keyframes.append(keyframe)
             }
