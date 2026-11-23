@@ -64,6 +64,8 @@ extension ComposedSprite {
             case headgear
             case garment
             case shadow
+            /// [RagOff iPad Mod] Hunter falcon drawn next to the character.
+            case falcon
         }
 
         public var sprite: SpriteResource
@@ -159,6 +161,10 @@ extension ComposedSprite {
             return -1
         }
 
+        if part.semantic == .falcon {
+            return 40
+        }
+
         let isNorth = switch direction {
         case .west, .northwest, .north, .northeast: true
         case .south, .southwest, .east, .southeast: false
@@ -222,6 +228,23 @@ extension ComposedSprite {
             default:
                 return 0
             }
+        }
+    }
+}
+
+extension ComposedSprite.Part {
+    /// [RagOff iPad Mod] The action index this part uses for the character's action index.
+    /// Shadows always use action 0. A falcon only has idle (0) and walk (1) actions,
+    /// so every other action falls back to idle in the same direction.
+    public func ragOffActionIndex(_ actionIndex: Int) -> Int {
+        switch semantic {
+        case .shadow:
+            return 0
+        case .falcon:
+            let direction = actionIndex % 8
+            return (actionIndex / 8 == 1 ? 8 : 0) + direction
+        default:
+            return actionIndex
         }
     }
 }
