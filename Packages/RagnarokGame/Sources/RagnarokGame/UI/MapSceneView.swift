@@ -21,6 +21,10 @@ struct MapSceneView: View {
     @State private var actionBarHeight: CGFloat = 0
     @State private var presentedMenuItem: MenuItem?
 
+    // [RagOff iPad Mod] Big touch controls (switchable back at any time) and auto hunt.
+    @AppStorage("ragOffMobileControls") private var ragOffMobileControls = true
+    @State private var ragOffAutoHunt = false
+
     var body: some View {
         ZStack {
             #if os(visionOS)
@@ -162,31 +166,112 @@ struct MapSceneView: View {
     }
 
     private var actionBar: some View {
-        ActionBarView(
-            selectedTargetType: runtime.scene.state.selectedTargetType,
-            onTargetAction: {
-                runtime.scene.performTargetAction()
-            },
-            onSelectNextTarget: {
-                runtime.selectNextTarget()
-            },
-            onDeselectTarget: {
-                runtime.scene.selectTarget(nil)
-            },
-            onPickup: {
-                runtime.scene.pickUpNearestItem()
-            },
-            onSit: {
-                runtime.scene.toggleSit()
-            },
-            onShortcut: { shortcut in
-                playSession.useShortcut(shortcut)
+        VStack(alignment: .trailing, spacing: 6) {
+            Button {
+                ragOffMobileControls.toggle()
+                if !ragOffMobileControls {
+                    ragOffAutoHunt = false
+                }
+            } label: {
+                Text(verbatim: ragOffMobileControls ? "切換：原版按鍵" : "切換：大按鍵模式")
+                    .font(.game(size: 11, weight: .bold))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Capsule().fill(Color.black.opacity(0.45)))
             }
-        )
+            .buttonStyle(.plain)
+
+            if ragOffMobileControls {
+                RagOffMobileActionBarView(
+                    selectedTargetType: runtime.scene.state.selectedTargetType,
+                    isAutoHunting: ragOffAutoHunt,
+                    onToggleAutoHunt: {
+                        ragOffAutoHunt.toggle()
+                    },
+                    onTargetAction: {
+                        runtime.scene.performTargetAction()
+                    },
+                    onSelectNextTarget: {
+                        runtime.selectNextTarget()
+                    },
+                    onDeselectTarget: {
+                        runtime.scene.selectTarget(nil)
+                    },
+                    onPickup: {
+                        runtime.scene.pickUpNearestItem()
+                    },
+                    onSit: {
+                        runtime.scene.toggleSit()
+                    },
+                    onShortcut: { shortcut in
+                        playSession.useShortcut(shortcut)
+                    }
+                )
+            } else {
+                ActionBarView(
+                    selectedTargetType: runtime.scene.state.selectedTargetType,
+                    onTargetAction: {
+                        runtime.scene.performTargetAction()
+                    },
+                    onSelectNextTarget: {
+                        runtime.selectNextTarget()
+                    },
+                    onDeselectTarget: {
+                        runtime.scene.selectTarget(nil)
+                    },
+                    onPickup: {
+                        runtime.scene.pickUpNearestItem()
+                    },
+                    onSit: {
+                        runtime.scene.toggleSit()
+                    },
+                    onShortcut: { shortcut in
+                        playSession.useShortcut(shortcut)
+                    }
+                )
+            }
+        }
+        .task(id: ragOffAutoHunt) {
+            await runRagOffAutoHunt()
+        }
         .onGeometryChange(for: CGFloat.self) { geometryProxy in
             geometryProxy.size.height
         } action: { height in
             actionBarHeight = height
+        }
+    }
+
+    /// [RagOff iPad Mod] While auto hunt is on, keep attacking the nearest monster:
+    /// pick a new one when there is no living monster selected, and attack again
+    /// when the player has been standing idle next to the selected one.
+    private func runRagOffAutoHunt() async {
+        guard ragOffAutoHunt else {
+            return
+        }
+        var idleTicks = 0
+        while ragOffAutoHunt && !Task.isCancelled {
+            let scene = runtime.scene
+            if !scene.state.isPlayerDead {
+                if let target = scene.selectedTarget, target.type == .monster {
+                    if scene.player.action.actionType == .idle {
+                        idleTicks += 1
+                    } else {
+                        idleTicks = 0
+                    }
+                    if idleTicks >= 3 {
+                        idleTicks = 0
+                        scene.performTargetAction()
+                    }
+                } else {
+                    if scene.selectedTarget != nil {
+                        scene.selectTarget(nil)
+                    }
+                    idleTicks = 0
+                    scene.performTargetAction()
+                }
+            }
+            try? await Task.sleep(for: .milliseconds(500))
         }
     }
 
