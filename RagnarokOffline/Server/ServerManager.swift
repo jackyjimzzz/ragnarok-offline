@@ -186,6 +186,46 @@ let adventurerScript = """
     			.@wy = atoi(.@p$[2]);
     			goto L_DoWarp;
     		case 3:
+    			switch (select("直接進入副本（不限人數、等級、組隊、冷卻）:傳到副本入口 NPC 旁邊:副本刷新（關閉目前的副本）")) {
+    			case 1:
+    				setarray .@iname$, "Endless Tower","Sealed Catacomb","Orc's Memory","Nidhoggur's Nest","Old Glast Heim","Old Glast Heim (Beginner)","Old Glast Heim (Challenge Mode)","Fall of Glast Heim (Normal)","Fall of Glast Heim (Advanced)","Sky Fortress Invasion","Devil's Tower","Poring Village","Faceworm's Nest","Ghost Palace","Horror Toy Factory","Mistwood Maze","Culvert","Octopus Cave","Bangungot Hospital 2F","Buwaya Cave","Bakonawa Lake","Wolfchev's Laboratory","Eclage Interior","Sara's Memories","Geffen Magic Tournament","Assault on the Airship","Fenrir and Sarah","Nightmarish Jitterbug","Isle of Bios","Morse's Cave","Temple of the Demon God","Central Laboratory","Last room","Charleston in Distress","Ritual of Blessing","Room of Consciousness","Heart Hunter War Base 1","Heart Hunter War Base 2","Werner Laboratory central room#1","Werner Laboratory central room#2","Infinite Space","Regenschirm","Sealed OS","OS Occupation","2nd OS Search","Cor Memorial","Half Moon In The Daylight","Weekend Dungeon","Friday Dungeon","Twilight Garden","Hey! Sweety","Farm Lost in Time","Water Garden","Water Garden Hard","Hidden Flower Garden","Security Area 1","Security Area 2","Sunken Tower","Constellation Tower","Tomb of Remorse","Geffen Night Arena","Airship Crash","Thanatos Tower","Oz Labyrinth","Thor Military Base","Wolves Gathering Place","Sanctuary Purification","High Priest's Villa","Villa of Deception","Villa of Deception Advanced","Bagot Laboratory","Confused Snake's Nest","Iwin Patrol","Airship Destruction","Simulation Battle","Deep Forest";
+    				setarray .@ilabel$, "無限塔","封印神殿","半獸人的記憶","尼德霍格巢穴","舊格拉斯海姆","舊格拉斯海姆（新手）","舊格拉斯海姆（挑戰）","格拉斯海姆的陷落（普通）","格拉斯海姆的陷落（進階）","空中要塞","惡魔之塔","波利村","臉蟲巢穴","鬼魂宮殿","恐怖玩具工廠","迷霧森林","馬朗島地下水道","章魚洞窟","班古葛醫院 2F","布瓦亞洞窟","巴科納瓦湖","沃爾夫切夫研究所","艾克拉傑內部","莎拉的記憶","吉芬魔法大賽","飛空艇襲擊","芬里爾與莎拉","惡夢吉特巴","拜歐斯之島","莫斯洞窟","魔神殿","中央研究所","最後的房間","危機中的查爾斯頓","祝福儀式","意識之間","心靈獵人戰爭基地 1","心靈獵人戰爭基地 2","維納研究所中央室 1","維納研究所中央室 2","無限空間","雷根施爾姆","封印的 OS","OS 佔領","第二次 OS 搜索","柯爾紀念館","白晝的半月","週末迷宮","週五迷宮","黃昏庭園","嘿！甜心","時光中遺失的農場","水之庭園","水之庭園（困難）","隱藏花園","警戒區域 1","警戒區域 2","沉沒之塔","星座之塔","悔恨之墓","吉芬夜間競技場","飛空艇墜毀","死者之塔（副本）","歐茲迷宮","托爾軍事基地","狼群聚集地","聖域淨化","大祭司別墅","欺瞞別墅","欺瞞別墅（進階）","巴哥特研究所","混亂蛇巢","伊溫巡邏","飛空艇毀滅","模擬戰鬥","深邃森林";
+    				.@i = select(implode(.@ilabel$, ":")) - 1;
+    				.@old = instance_id(IM_CHAR);
+    				if (.@old > 0)
+    					instance_destroy .@old;
+    				.@iid = instance_create(.@iname$[.@i], IM_CHAR);
+    				if (.@iid <= 0) {
+    					mes "[冒險服務員]";
+    					mes "副本建立失敗（代碼 " + .@iid + "）。";
+    					close;
+    				}
+    				.@r = instance_enter(.@iname$[.@i], -1, -1, getcharid(0), .@iid);
+    				if (.@r != IE_OK) {
+    					mes "[冒險服務員]";
+    					mes "進入副本失敗（代碼 " + .@r + "）。";
+    					close;
+    				}
+    				end;
+    			case 3:
+    				.@n = 0;
+    				.@cid = instance_id(IM_CHAR);
+    				if (.@cid > 0) {
+    					instance_destroy .@cid;
+    					.@n++;
+    				}
+    				.@pid = instance_id(IM_PARTY);
+    				if (.@pid > 0) {
+    					instance_destroy .@pid;
+    					.@n++;
+    				}
+    				mes "[冒險服務員]";
+    				if (.@n > 0)
+    					mes "已經關閉你目前的副本，可以重新進入了。";
+    				else
+    					mes "你目前沒有開啟中的副本。";
+    				close;
+    			}
     			setarray .@name$, "無限塔","半獸人的記憶","封印神殿","尼德霍格巢穴","舊格拉斯海姆","空中要塞","惡魔之塔","波利村","臉蟲巢穴","鬼魂宮殿","恐怖玩具工廠","莫斯洞窟","魔神殿","拜歐斯之島","章魚洞窟","馬朗島地下水道","週末迷宮","週五迷宮","飛空艇襲擊","中央研究所","心靈獵人戰爭基地","無限空間";
     			setarray .@map$, "alberta","gef_fild10","monk_test","nyd_dun02","glast_01","prt_q","dali02","prt_fild05","payon","dali02","xmas","moro_cav","moro_cav","moro_cav","mal_dun01","mal_in01","pay_arche","gef_tower","dali02","verus01","ein_fild04","cmd_fild07";
     			setarray .@x, 214,242,309,100,204,249,134,174,157,43,237,61,41,50,153,172,44,57,136,153,275,54;
@@ -216,12 +256,12 @@ let adventurerScript = """
     	case 2:
     		percentheal 100,100;
     		skilleffect "AL_INCAGI",10;
-    		sc_start SC_INCREASEAGI,240000,10;
+    		sc_start SC_INCREASEAGI,43200000,10;
     		skilleffect "AL_BLESSING",10;
-    		sc_start SC_BLESSING,240000,10;
+    		sc_start SC_BLESSING,43200000,10;
     		mes "[冒險服務員]";
     		mes "HP、SP 已經回滿，";
-    		mes "也幫你加上了速度增加和天使之賜福（4 分鐘）。";
+    		mes "也幫你加上了速度增加和天使之賜福（12 小時）。";
     		close;
 
     	case 3:
@@ -485,6 +525,9 @@ let adventurerScript = """
     OnPCLoginEvent:
     	// [RagOff iPad Mod] +100000 max weight, refreshed at every login.
     	bonus_script "{ bonus bAddMaxWeight,1000000; }",2592000,1536;
+    	// [RagOff iPad Mod] Make sure the player always has a party (some instances check for one).
+    	if (getcharid(1) == 0)
+    		party_create("RO" + getcharid(0), getcharid(0));
     	end;
     }
 
