@@ -20,7 +20,7 @@ extension ComposedSprite {
 
         var duration: Duration?
         for part in parts {
-            let partActionIndex = (part.semantic == .shadow ? 0 : actionIndex)
+            let partActionIndex = part.ragOffActionIndex(actionIndex)
             guard let partAction = part.sprite.act.action(at: partActionIndex), !partAction.frames.isEmpty else {
                 continue
             }
