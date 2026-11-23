@@ -131,7 +131,7 @@ let adventurerScript = """
     	mes "[冒險服務員]";
     	mes "冒險者你好！需要什麼服務呢？";
     	next;
-    	switch (select("傳送服務:治療與祝福:重置素質/技能:倉庫與存檔點:鑑定/修理裝備:轉職服務:領取冒險補給:道具商店:一鍵升滿等級與素質:領取 200 等套裝:租借坐騎與獵鷹:不用了")) {
+    	switch (select("傳送服務:治療與祝福:重置素質/技能:倉庫與存檔點:鑑定/修理裝備:轉職服務:領取冒險補給:道具商店:一鍵升滿等級與素質:領取 200 等套裝:租借坐騎與獵鷹:PK 對手:不用了")) {
     	case 1:
     		switch (select("城鎮:迷宮:副本入口:上次傳送的地點")) {
     		case 1:
@@ -438,6 +438,57 @@ let adventurerScript = """
     		mes "好了！";
     		close;
 
+    	case 12:
+    		getmapxy(.@pm$, .@px, .@py, BL_PC);
+    		mes "[冒險服務員]";
+    		mes "想找誰 PK 呢？";
+    		mes "對手會直接出現在你旁邊。";
+    		mes "打完可以用蝴蝶翅膀回城，";
+    		mes "或回來找我清除對手。";
+    		next;
+    		switch (select("自己的分身:轉生二轉（普通）:轉生二轉（MVP）:轉生二轉第二批（普通）:轉生二轉第二批（MVP）:三轉職業（最強 MVP）:清除我叫出來的對手:取消")) {
+    		case 1:
+    			clone .@pm$, .@px + 2, .@py, "RagOffPK::OnDummy", getcharid(0);
+    			close;
+    		case 2:
+    			setarray .@pkid, 1634,1635,1636,1637,1638,1639;
+    			setarray .@pkname$, "騎士系 賽依連","刺客系 艾勒梅斯","鐵匠系 哈沃德","牧師系 瑪嘉蕾特","獵人系 希西爾","巫師系 卡特琳娜";
+    			break;
+    		case 3:
+    			setarray .@pkid, 1646,1647,1648,1649,1650,1651;
+    			setarray .@pkname$, "騎士系 賽依連","刺客系 艾勒梅斯","鐵匠系 哈沃德","牧師系 瑪嘉蕾特","獵人系 希西爾","巫師系 卡特琳娜";
+    			break;
+    		case 4:
+    			setarray .@pkid, 2221,2222,2223,2224,2225,2226,2227;
+    			setarray .@pkname$, "十字軍系 蘭德爾","鍊金系 弗拉梅爾","賢者系 西莉亞","武僧系 陳","流氓系 格蒂","詩人系 阿爾佛西奧","舞孃系 崔恩蒂尼";
+    			break;
+    		case 5:
+    			setarray .@pkid, 2235,2236,2237,2238,2239,2240,2241;
+    			setarray .@pkname$, "十字軍系 蘭德爾","鍊金系 弗拉梅爾","賢者系 西莉亞","武僧系 陳","流氓系 格蒂","詩人系 阿爾佛西奧","舞孃系 崔恩蒂尼";
+    			break;
+    		case 6:
+    			setarray .@pkid, 3225,3220,3223,3221,3222,3224,3240;
+    			setarray .@pkname$, "盧恩騎士 賽依連","十字斬首者 艾勒梅斯","機械工匠 哈沃德","大主教 瑪嘉蕾特","遊俠 希西爾","咒術士 卡特琳娜","皇家禁衛隊 蘭德爾";
+    			break;
+    		case 7:
+    			killmonster .@pm$, "RagOffPK::OnDummy";
+    			mes "[冒險服務員]";
+    			mes "已經清除這張地圖上你叫出來的對手。";
+    			close;
+    		default:
+    			close;
+    		}
+    		.@n = getarraysize(.@pkid);
+    		.@pkname$[.@n] = "全部一起上";
+    		.@s = select(implode(.@pkname$, ":")) - 1;
+    		if (.@s == .@n) {
+    			for (.@i = 0; .@i < .@n; .@i++)
+    				monster .@pm$, .@px + 2 + (.@i % 3), .@py - 1 + (.@i / 3), "--ja--", .@pkid[.@i], 1, "RagOffPK::OnDummy";
+    		} else {
+    			monster .@pm$, .@px + 2, .@py, "--ja--", .@pkid[.@s], 1, "RagOffPK::OnDummy";
+    		}
+    		close;
+
     	case 10:
     		.@bj = BaseJob;
     		if (.@bj == 7)                                       // Knight family
@@ -529,6 +580,12 @@ let adventurerScript = """
     	// [RagOff iPad Mod] Make sure the player always has a party (some instances check for one).
     	if (getcharid(1) == 0)
     		party_create("RO" + getcharid(0), getcharid(0));
+    	end;
+    }
+
+    -	script	RagOffPK	-1,{
+    	end;
+    OnDummy:
     	end;
     }
 
