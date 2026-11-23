@@ -439,55 +439,21 @@ let adventurerScript = """
     		close;
 
     	case 12:
-    		getmapxy(.@pm$, .@px, .@py, BL_PC);
     		mes "[冒險服務員]";
-    		mes "想找誰 PK 呢？";
-    		mes "對手會直接出現在你旁邊。";
-    		mes "打完可以用蝴蝶翅膀回城，";
-    		mes "或回來找我清除對手。";
+    		mes "要傳送到 PK 場地嗎？";
+    		mes "到了之後跟「PK 管理員」說話，";
+    		mes "選好對手就會開始。";
     		next;
-    		switch (select("自己的分身:轉生二轉（普通）:轉生二轉（MVP）:轉生二轉第二批（普通）:轉生二轉第二批（MVP）:三轉職業（最強 MVP）:清除我叫出來的對手:取消")) {
-    		case 1:
-    			clone .@pm$, .@px + 2, .@py, "RagOffPK::OnDummy", getcharid(0);
+    		if (select("出發:取消") == 2)
     			close;
-    		case 2:
-    			setarray .@pkid, 1634,1635,1636,1637,1638,1639;
-    			setarray .@pkname$, "騎士系 賽依連","刺客系 艾勒梅斯","鐵匠系 哈沃德","牧師系 瑪嘉蕾特","獵人系 希西爾","巫師系 卡特琳娜";
-    			break;
-    		case 3:
-    			setarray .@pkid, 1646,1647,1648,1649,1650,1651;
-    			setarray .@pkname$, "騎士系 賽依連","刺客系 艾勒梅斯","鐵匠系 哈沃德","牧師系 瑪嘉蕾特","獵人系 希西爾","巫師系 卡特琳娜";
-    			break;
-    		case 4:
-    			setarray .@pkid, 2221,2222,2223,2224,2225,2226,2227;
-    			setarray .@pkname$, "十字軍系 蘭德爾","鍊金系 弗拉梅爾","賢者系 西莉亞","武僧系 陳","流氓系 格蒂","詩人系 阿爾佛西奧","舞孃系 崔恩蒂尼";
-    			break;
-    		case 5:
-    			setarray .@pkid, 2235,2236,2237,2238,2239,2240,2241;
-    			setarray .@pkname$, "十字軍系 蘭德爾","鍊金系 弗拉梅爾","賢者系 西莉亞","武僧系 陳","流氓系 格蒂","詩人系 阿爾佛西奧","舞孃系 崔恩蒂尼";
-    			break;
-    		case 6:
-    			setarray .@pkid, 3225,3220,3223,3221,3222,3224,3240;
-    			setarray .@pkname$, "盧恩騎士 賽依連","十字斬首者 艾勒梅斯","機械工匠 哈沃德","大主教 瑪嘉蕾特","遊俠 希西爾","咒術士 卡特琳娜","皇家禁衛隊 蘭德爾";
-    			break;
-    		case 7:
-    			killmonster .@pm$, "RagOffPK::OnDummy";
-    			mes "[冒險服務員]";
-    			mes "已經清除這張地圖上你叫出來的對手。";
-    			close;
-    		default:
-    			close;
+    		getmapxy(.@pm$, .@px, .@py, BL_PC);
+    		if (.@pm$ != "guild_vs1") {
+    			ragoff_pkback$ = .@pm$;
+    			ragoff_pkbackx = .@px;
+    			ragoff_pkbacky = .@py;
     		}
-    		.@n = getarraysize(.@pkid);
-    		.@pkname$[.@n] = "全部一起上";
-    		.@s = select(implode(.@pkname$, ":")) - 1;
-    		if (.@s == .@n) {
-    			for (.@i = 0; .@i < .@n; .@i++)
-    				monster .@pm$, .@px + 2 + (.@i % 3), .@py - 1 + (.@i / 3), "--ja--", .@pkid[.@i], 1, "RagOffPK::OnDummy";
-    		} else {
-    			monster .@pm$, .@px + 2, .@py, "--ja--", .@pkid[.@s], 1, "RagOffPK::OnDummy";
-    		}
-    		close;
+    		warp "guild_vs1", 50, 47;
+    		end;
 
     	case 10:
     		.@bj = BaseJob;
@@ -581,6 +547,85 @@ let adventurerScript = """
     	if (getcharid(1) == 0)
     		party_create("RO" + getcharid(0), getcharid(0));
     	end;
+    }
+
+    // [RagOff iPad Mod] PK arena: guild_vs1 without the guild war rules.
+    guild_vs1	mapflag	gvg	off
+    guild_vs1	mapflag	gvg_noparty	off
+    guild_vs1	mapflag	hidemobhpbar	off
+    guild_vs1	mapflag	noteleport	off
+
+    guild_vs1,50,52,4	script	PK 管理員#ragoff	105,{
+    	mes "[PK 管理員]";
+    	mes "歡迎來到 PK 場地！";
+    	mes "選好對手後，對手會出現在場地中央。";
+    	next;
+    	switch (select("選擇對手開始 PK:清除場上的對手:補滿 HP/SP:回到原本的地方:不用了")) {
+    	case 1:
+    		break;
+    	case 2:
+    		killmonster "guild_vs1", "RagOffPK::OnDummy";
+    		mes "[PK 管理員]";
+    		mes "場上的對手都清除了。";
+    		close;
+    	case 3:
+    		percentheal 100,100;
+    		mes "[PK 管理員]";
+    		mes "HP、SP 已經補滿。";
+    		close;
+    	case 4:
+    		killmonster "guild_vs1", "RagOffPK::OnDummy";
+    		if (ragoff_pkback$ == "")
+    			warp "SavePoint", 0, 0;
+    		else
+    			warp ragoff_pkback$, ragoff_pkbackx, ragoff_pkbacky;
+    		end;
+    	default:
+    		close;
+    	}
+    	switch (select("自己的分身:轉生二轉（普通）:轉生二轉（MVP）:轉生二轉第二批（普通）:轉生二轉第二批（MVP）:三轉職業（最強 MVP）:取消")) {
+    	case 1:
+    		killmonster "guild_vs1", "RagOffPK::OnDummy";
+    		clone "guild_vs1", 50, 40, "RagOffPK::OnDummy", getcharid(0);
+    		mes "[PK 管理員]";
+    		mes "你的分身出現了，開始吧！";
+    		close;
+    	case 2:
+    		setarray .@pkid, 1634,1635,1636,1637,1638,1639;
+    		setarray .@pkname$, "騎士系 賽依連","刺客系 艾勒梅斯","鐵匠系 哈沃德","牧師系 瑪嘉蕾特","獵人系 希西爾","巫師系 卡特琳娜";
+    		break;
+    	case 3:
+    		setarray .@pkid, 1646,1647,1648,1649,1650,1651;
+    		setarray .@pkname$, "騎士系 賽依連","刺客系 艾勒梅斯","鐵匠系 哈沃德","牧師系 瑪嘉蕾特","獵人系 希西爾","巫師系 卡特琳娜";
+    		break;
+    	case 4:
+    		setarray .@pkid, 2221,2222,2223,2224,2225,2226,2227;
+    		setarray .@pkname$, "十字軍系 蘭德爾","鍊金系 弗拉梅爾","賢者系 西莉亞","武僧系 陳","流氓系 格蒂","詩人系 阿爾佛西奧","舞孃系 崔恩蒂尼";
+    		break;
+    	case 5:
+    		setarray .@pkid, 2235,2236,2237,2238,2239,2240,2241;
+    		setarray .@pkname$, "十字軍系 蘭德爾","鍊金系 弗拉梅爾","賢者系 西莉亞","武僧系 陳","流氓系 格蒂","詩人系 阿爾佛西奧","舞孃系 崔恩蒂尼";
+    		break;
+    	case 6:
+    		setarray .@pkid, 3225,3220,3223,3221,3222,3224,3240;
+    		setarray .@pkname$, "盧恩騎士 賽依連","十字斬首者 艾勒梅斯","機械工匠 哈沃德","大主教 瑪嘉蕾特","遊俠 希西爾","咒術士 卡特琳娜","皇家禁衛隊 蘭德爾";
+    		break;
+    	default:
+    		close;
+    	}
+    	.@n = getarraysize(.@pkid);
+    	.@pkname$[.@n] = "全部一起上";
+    	.@s = select(implode(.@pkname$, ":")) - 1;
+    	killmonster "guild_vs1", "RagOffPK::OnDummy";
+    	if (.@s == .@n) {
+    		for (.@i = 0; .@i < .@n; .@i++)
+    			monster "guild_vs1", 46 + (.@i % 4) * 3, 38 + (.@i / 4) * 3, "--ja--", .@pkid[.@i], 1, "RagOffPK::OnDummy";
+    	} else {
+    		monster "guild_vs1", 50, 40, "--ja--", .@pkid[.@s], 1, "RagOffPK::OnDummy";
+    	}
+    	mes "[PK 管理員]";
+    	mes "對手已經在場地中央了，開始吧！";
+    	close;
     }
 
     -	script	RagOffPK	-1,{
