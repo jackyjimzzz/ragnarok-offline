@@ -21,6 +21,9 @@ extension ComposedSprite {
         public var outfit: Int
         public var madoType: MadoType
 
+        /// [RagOff iPad Mod] Falcon drawn next to the character: 0 none, 1 hunter, 2 sniper, 3 ranger (owl), 4 windhawk.
+        public var ragOffFalcon: Int
+
         public init(jobID: Int) {
             self.job = SpriteJob(rawValue: jobID)
             self.gender = .male
@@ -33,6 +36,7 @@ extension ComposedSprite {
             self.garment = 0
             self.outfit = 0
             self.madoType = .robot
+            self.ragOffFalcon = 0
         }
     }
 }
