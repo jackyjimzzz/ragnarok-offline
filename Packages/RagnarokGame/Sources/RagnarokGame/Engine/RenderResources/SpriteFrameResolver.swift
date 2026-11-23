@@ -39,7 +39,7 @@ struct SpriteFrameResolver {
         resolvedLayers.reserveCapacity(24)
 
         for (partIndex, part) in composedSprite.parts.enumerated() {
-            let partActionIndex = (part.semantic == .shadow ? 0 : actionIndex)
+            let partActionIndex = part.ragOffActionIndex(actionIndex)
             guard let partAction = part.sprite.act.action(at: partActionIndex), !partAction.frames.isEmpty else {
                 continue
             }
