@@ -23,6 +23,11 @@ struct GameCloseButton: View {
             }
         }
         .buttonStyle(.gameTitleBar)
+        // [RagOff iPad Mod] Bigger close button that is easy to hit with a finger.
+        .scaleEffect(1.8)
+        .frame(width: 30, height: 24)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: action)
     }
 }
 
