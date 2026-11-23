@@ -481,6 +481,7 @@ final class PlaySession {
             let healthState = StatusChangeOption2(rawValue: Int(packet.healthState)) ?? .none
             let effectState = StatusChangeOption(rawValue: Int(packet.effectState)) ?? .nothing
             mapScene?.onMapObjectStateChanged(objectID: packet.AID, bodyState: bodyState, healthState: healthState, effectState: effectState)
+            mapScene?.ragOffUpdateEffectStateRaw(objectID: packet.AID, rawValue: Int(packet.effectState))
         case let packet as PACKET_ZC_NOTIFY_ACT:
             let objectAction = MapObjectAction(from: packet)
             mapScene?.onMapObjectActionPerformed(objectAction: objectAction)
